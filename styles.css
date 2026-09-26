@@ -1,575 +1,381 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+const STORAGE_KEYS = {
+  players: 'pitchrank_players_v2',
+  adminEmail: 'pitchrank_admin_email'
+};
 
-:root {
-  --primary: #1a1a2e;
-  --secondary: #16213e;
-  --accent: #00d4ff;
-  --accent-dark: #0099cc;
-  --text-light: #ffffff;
-  --text-dark: #1a1a2e;
-  --bg-light: #f5f5f5;
-  --gold: #ffd700;
-}
+const DEFAULT_ADMIN_EMAIL = 'yourname@gmail.com';
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: var(--text-light);
-  transition: all 0.3s ease;
-  min-height: 100vh;
-}
-
-body.light-mode {
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-  color: var(--text-dark);
-}
-
-/* ===== HEADER ===== */
-.header {
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
-  padding: 40px 20px;
-  text-align: center;
-  border-bottom: 3px solid var(--accent);
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
-}
-
-.site-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
-  margin-bottom: 10px;
-  letter-spacing: 2px;
-}
-
-.site-tagline {
-  font-size: 1.1rem;
-  color: #b0b0b0;
-  font-weight: 300;
-  letter-spacing: 1px;
-}
-
-body.light-mode .site-title {
-  color: #0099cc;
-  text-shadow: 0 4px 15px rgba(0, 153, 204, 0.2);
-}
-
-body.light-mode .site-tagline {
-  color: #666;
-}
-
-/* ===== SETTINGS BUTTON ===== */
-.settings-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: var(--accent);
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.settings-btn:hover {
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.5);
-}
-
-body.light-mode .settings-btn {
-  background: #0099cc;
-}
-
-/* ===== SETTINGS PANEL ===== */
-.settings-panel {
-  position: fixed;
-  top: 0;
-  right: -400px;
-  width: 400px;
-  height: 100vh;
-  background: rgba(26, 26, 46, 0.95);
-  backdrop-filter: blur(10px);
-  border-left: 3px solid var(--accent);
-  overflow-y: auto;
-  transition: right 0.3s ease;
-  z-index: 999;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.settings-panel.active {
-  right: 0;
-}
-
-.settings-content {
-  padding: 30px 20px;
-}
-
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 15px;
-}
-
-.settings-header h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  color: var(--accent);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--accent);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-  transform: scale(1.2);
-}
-
-.settings-section {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-}
-
-.settings-section h3 {
-  color: var(--accent);
-  font-size: 1.1rem;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.setting-item {
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.setting-item label {
-  font-weight: 600;
-  font-size: 0.95rem;
-  min-width: 120px;
-}
-
-.setting-item input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.setting-item input[type="text"],
-.setting-item input[type="color"] {
-  flex: 1;
-  padding: 8px 12px;
-  border: 2px solid var(--accent);
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--text-light);
-  border-radius: 5px;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.setting-item input[type="text"]:focus,
-.setting-item input[type="color"]:focus {
-  outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-}
-
-.music-presets {
-  background: rgba(0, 212, 255, 0.05);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.music-presets p {
-  font-size: 0.85rem;
-  color: var(--accent);
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-.preset-btn {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 8px;
-  background: rgba(0, 212, 255, 0.2);
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.preset-btn:hover {
-  background: var(--accent);
-  color: var(--primary);
-}
-
-.load-music-btn {
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, var(--accent) 0%, #00a8cc 100%);
-  border: none;
-  color: var(--primary);
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-}
-
-.load-music-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 212, 255, 0.4);
-}
-
-/* ===== MUSIC PLAYER ===== */
-.music-player {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%);
-  backdrop-filter: blur(10px);
-  border: 2px solid var(--accent);
-  border-radius: 15px;
-  padding: 15px 20px;
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
-  animation: slideIn 0.3s ease;
-  z-index: 500;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
+const positionRules = {
+  GK: {
+    Reflexes: 0.15,
+    Positioning: 0.2,
+    Handling: -0.25,
+    Distribution: 0.1,
+    'Clean Sheet': 0.4,
+    'Goal Conceded': -0.2,
+    'Claim': 0.2,
+    'Long Kick': 0.1,
+  },
+  DF: {
+    Tackling: 0.25,
+    Awareness: 0.2,
+    'Aerial Ability': 0.15,
+    'Beaten 1v1': -0.15,
+    'Caught Out of Position': -0.2,
+    'Clean Sheet': 0.3,
+    'Interception': 0.2
+  },
+  MF: {
+    Vision: 0.3,
+    'Chance Created': 0.15,
+    Passing: 0.02,
+    'Ball Control': 0.15,
+    'Dispossessed': -0.12,
+    Defending: 0.15,
+    'Successful Dribble': 0.15
+  },
+  AT: {
+    Finishing: 0.35,
+    'Shot Power': 0.1,
+    'Big Chance Missed': -0.25,
+    'Shot Off Target': -0.05,
+    Dribbling: 0.15,
+    Positioning: 0.1,
+    'Attacking Run': 0.1,
+    'Goal Scored': 0.35
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+};
+
+const defaultPlayers = [
+  { id: 'gk-1', name: 'Zishan', club: 'Barça', position: 'GK', stats: { Reflexes: 82, Positioning: 78, Handling: 79, Distribution: 74, 'Clean Sheet': 0, 'Goal Conceded': 0, Claim: 0, 'Long Kick': 0 } },
+  { id: 'df-1', name: 'Naresh', club: 'Barça', position: 'DF', stats: { Tackling: 71, Awareness: 76, 'Aerial Ability': 72, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
+  { id: 'df-2', name: 'Ibrahim', club: 'Barça', position: 'DF', stats: { Tackling: 69, Awareness: 74, 'Aerial Ability': 70, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
+  { id: 'mf-1', name: 'Ihsan', club: 'Barça', position: 'MF', stats: { Vision: 81, 'Chance Created': 76, Passing: 78, 'Ball Control': 80, 'Dispossessed': 0, Defending: 72, 'Successful Dribble': 0 } },
+  { id: 'mf-2', name: 'M.Akhsar', club: 'Barça', position: 'MF', stats: { Vision: 78, 'Chance Created': 74, Passing: 77, 'Ball Control': 76, 'Dispossessed': 0, Defending: 68, 'Successful Dribble': 0 } },
+  { id: 'mf-3', name: 'Rusndi', club: 'Barça', position: 'MF', stats: { Vision: 72, 'Chance Created': 79, Passing: 80, 'Ball Control': 73, 'Dispossessed': 0, Defending: 71, 'Successful Dribble': 0 } },
+  { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', stats: { Vision: 77, 'Chance Created': 80, Passing: 76, 'Ball Control': 74, 'Dispossessed': 0, Defending: 75, 'Successful Dribble': 0 } },
+  { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', stats: { Finishing: 79, 'Shot Power': 76, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 75, Positioning: 72, 'Attacking Run': 0, 'Goal Scored': 0 } },
+  { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', stats: { Finishing: 70, 'Shot Power': 73, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 78, Positioning: 70, 'Attacking Run': 0, 'Goal Scored': 0 } },
+
+  { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', stats: { Reflexes: 80, Positioning: 76, Handling: 78, Distribution: 72, 'Clean Sheet': 0, 'Goal Conceded': 0, Claim: 0, 'Long Kick': 0 } },
+  { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', stats: { Tackling: 72, Awareness: 75, 'Aerial Ability': 71, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
+  { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', stats: { Tackling: 66, Awareness: 70, 'Aerial Ability': 68, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
+  { id: 'mf-5', name: 'Khush', club: 'Madrid', position: 'MF', stats: { Vision: 73, 'Chance Created': 75, Passing: 78, 'Ball Control': 79, 'Dispossessed': 0, Defending: 71, 'Successful Dribble': 0 } },
+  { id: 'mf-6', name: 'Ishan', club: 'Madrid', position: 'MF', stats: { Vision: 75, 'Chance Created': 74, Passing: 73, 'Ball Control': 72, 'Dispossessed': 0, Defending: 70, 'Successful Dribble': 0 } },
+  { id: 'mf-7', name: 'Mishal', club: 'Madrid', position: 'MF', stats: { Vision: 74, 'Chance Created': 76, Passing: 75, 'Ball Control': 77, 'Dispossessed': 0, Defending: 72, 'Successful Dribble': 0 } },
+  { id: 'mf-8', name: 'Zayan', club: 'Madrid', position: 'MF', stats: { Vision: 76, 'Chance Created': 71, Passing: 74, 'Ball Control': 75, 'Dispossessed': 0, Defending: 73, 'Successful Dribble': 0 } },
+  { id: 'at-3', name: 'Sayed', club: 'Madrid', position: 'AT', stats: { Finishing: 72, 'Shot Power': 74, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 76, Positioning: 71, 'Attacking Run': 0, 'Goal Scored': 0 } },
+  { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', stats: { Finishing: 75, 'Shot Power': 73, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 74, Positioning: 70, 'Attacking Run': 0, 'Goal Scored': 0 } }
+];
+
+const allStats = [
+  'Reflexes', 'Positioning', 'Handling', 'Distribution', 'Tackling', 'Awareness', 'Aerial Ability',
+  'Vision', 'Passing', 'Ball Control', 'Defending', 'Finishing', 'Shot Power', 'Dribbling', 'Physical', 'Pace',
+  'Claim', 'Long Kick', 'Interception', 'Chance Created', 'Successful Dribble', 'Goal Scored', 'Attacking Run',
+  'Big Chance Missed', 'Shot Off Target', 'Dispossessed', 'Clean Sheet', 'Goal Conceded', 'Beaten 1v1', 'Caught Out of Position'
+];
+
+let currentAdminEmail = localStorage.getItem(STORAGE_KEYS.adminEmail) || DEFAULT_ADMIN_EMAIL;
+let selectedPlayerId = null;
+
+function getPlayers() {
+  const raw = localStorage.getItem(STORAGE_KEYS.players);
+  if (!raw) {
+    localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(defaultPlayers));
+    return [...defaultPlayers];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return [...defaultPlayers];
+    }
+    return parsed;
+  } catch (error) {
+    return [...defaultPlayers];
   }
 }
 
-.player-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+function savePlayers(players) {
+  localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(players));
 }
 
-.play-btn,
-.stop-btn {
-  background: var(--accent);
-  border: none;
-  color: var(--primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
+function normalizeStatValue(rawValue) {
+  const value = Number(rawValue);
+  if (Number.isNaN(value)) return 0;
+  return value;
 }
 
-.play-btn:hover,
-.stop-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+function calculatePlayerPoints(player) {
+  const rules = positionRules[player.position] || {};
+  let total = 0;
+
+  Object.entries(rules).forEach(([statKey, weight]) => {
+    const statValue = Number(player.stats?.[statKey] ?? 0);
+    total += statValue * weight;
+  });
+
+  total += (Number(player.stats?.Physical ?? 0) * 0.03);
+  total += (Number(player.stats?.Pace ?? 0) * 0.02);
+
+  return Number(total.toFixed(2));
 }
 
-.volume-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+function getSortedPlayersByPosition(position) {
+  return [...getPlayers()]
+    .filter(player => player.position === position)
+    .sort((a, b) => calculatePlayerPoints(b) - calculatePlayerPoints(a));
 }
 
-#volumeSlider {
-  width: 100px;
-  height: 5px;
-  cursor: pointer;
-  accent-color: var(--accent);
+function renderSummary() {
+  const players = getPlayers();
+  document.getElementById('summaryGK').textContent = players.filter(p => p.position === 'GK').length;
+  document.getElementById('summaryDF').textContent = players.filter(p => p.position === 'DF').length;
+  document.getElementById('summaryMF').textContent = players.filter(p => p.position === 'MF').length;
+  document.getElementById('summaryAT').textContent = players.filter(p => p.position === 'AT').length;
 }
 
-.music-title {
-  font-weight: 600;
-  color: var(--accent);
-  min-width: 150px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+function renderRankingGrid() {
+  const grid = document.getElementById('rankingGrid');
+  const positions = ['GK', 'DF', 'MF', 'AT'];
+
+  grid.innerHTML = positions.map(position => {
+    const players = getSortedPlayersByPosition(position);
+
+    const cards = players.map(player => {
+      const points = calculatePlayerPoints(player);
+      const statPills = Object.entries(player.stats || {})
+        .slice(0, 4)
+        .map(([stat, value]) => `<span class="stat-pill">${stat}<strong>${value}</strong></span>`)
+        .join('');
+
+      return `
+        <article class="player-card">
+          <div class="player-card-top">
+            <span class="player-tag">${player.position}</span>
+            <span class="player-points">${points} pts</span>
+          </div>
+          <div class="player-row">
+            <span class="player-name">${player.name}</span>
+            <span class="player-club">${player.club}</span>
+          </div>
+          <div class="stat-strip">${statPills}</div>
+        </article>
+      `;
+    }).join('');
+
+    return `
+      <section class="position-panel ${position}">
+        <div class="position-header">
+          <h3>${position === 'GK' ? 'Goalkeepers' : position === 'DF' ? 'Defenders' : position === 'MF' ? 'Midfielders' : 'Attackers'}</h3>
+          <span class="position-badge">${position}</span>
+        </div>
+        <div class="player-card-list">${cards || '<div class="player-card"><p>No players in this position yet.</p></div>'}</div>
+      </section>
+    `;
+  }).join('');
 }
 
-.remove-music-btn {
-  background: rgba(255, 0, 0, 0.3);
-  border: 1px solid #ff6b6b;
-  color: #ff6b6b;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+function renderSquadGrid() {
+  const target = document.getElementById('squadGrid');
+  const players = getPlayers();
+
+  target.innerHTML = players.map(player => {
+    const statEntries = Object.entries(player.stats || {}).slice(0, 8);
+    const statList = statEntries.map(([key, value]) => `<div><span>${key}</span><strong>${value}</strong></div>`).join('');
+
+    return `
+      <article class="squad-card">
+        <div class="squad-card-head">
+          <h4>${player.name}</h4>
+          <span class="pos-tag">${player.position}</span>
+        </div>
+        <div class="meta">
+          <span>${player.club}</span>
+          <strong>${calculatePlayerPoints(player)} pts</strong>
+        </div>
+        <div class="stat-grid">${statList}</div>
+      </article>
+    `;
+  }).join('');
 }
 
-.remove-music-btn:hover {
-  background: #ff6b6b;
-  color: white;
-}
+function renderAdminPanel() {
+  const emailInput = document.getElementById('adminEmailInput');
+  emailInput.value = currentAdminEmail;
 
-/* ===== CONTAINER ===== */
-.container {
-  max-width: 1400px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
+  const editor = document.getElementById('adminEditor');
+  const playerSelect = document.getElementById('playerSelect');
+  const players = getPlayers();
 
-.top-column {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 204, 0.05) 100%);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
-}
-
-.top-column h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  color: var(--accent);
-  margin-bottom: 15px;
-  letter-spacing: 1px;
-}
-
-.top-column p {
-  font-size: 1rem;
-  color: #b0b0b0;
-}
-
-#topColumnContent {
-  margin-top: 15px;
-}
-
-/* ===== MAIN CONTAINER ===== */
-.main-container {
-  padding: 20px;
-}
-
-.columns-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-  margin-bottom: 30px;
-}
-
-.column-card {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 153, 204, 0.02) 100%);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.column-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 32px rgba(0, 212, 255, 0.2);
-  border-color: var(--gold);
-}
-
-.column-card h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  color: var(--accent);
-  margin-bottom: 15px;
-  text-transform: capitalize;
-}
-
-.column-card input,
-.column-card textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid var(--accent);
-  color: var(--text-light);
-  border-radius: 6px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
-}
-
-.column-card input:focus,
-.column-card textarea:focus {
-  outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-}
-
-.delete-btn {
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.3s ease;
-}
-
-.delete-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
-}
-
-.add-column-btn {
-  display: block;
-  margin: 20px auto;
-  padding: 15px 30px;
-  background: linear-gradient(135deg, var(--accent) 0%, #00a8cc 100%);
-  border: none;
-  color: var(--primary);
-  font-size: 1.1rem;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  letter-spacing: 1px;
-}
-
-.add-column-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .site-title {
-    font-size: 2.2rem;
+  if (!selectedPlayerId && players.length) {
+    selectedPlayerId = players[0].id;
   }
 
-  .settings-panel {
-    width: 100%;
-    right: -100%;
+  playerSelect.innerHTML = players.map(player => `<option value="${player.id}">${player.name} • ${player.position}</option>`).join('');
+
+  if (players.some(player => player.id === selectedPlayerId)) {
+    playerSelect.value = selectedPlayerId;
+  } else {
+    selectedPlayerId = players[0].id;
+    playerSelect.value = selectedPlayerId;
   }
 
-  .columns-container {
-    grid-template-columns: 1fr;
-  }
+  const form = document.getElementById('playerForm');
+  const selectedPlayer = players.find(player => player.id === selectedPlayerId) || players[0];
 
-  .music-player {
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    width: auto;
-  }
+  const formFields = [
+    { key: 'name', label: 'Name', type: 'text' },
+    { key: 'position', label: 'Position', type: 'select', options: ['GK', 'DF', 'MF', 'AT'] },
+    { key: 'club', label: 'Club', type: 'text' }
+  ];
 
-  .player-controls {
-    gap: 8px;
-  }
+  const statsField = allStats.map(stat => `
+    <label>
+      <span>${stat}</span>
+      <input name="${stat}" type="number" step="0.1" value="${Number(selectedPlayer.stats?.[stat] ?? 0)}" />
+    </label>
+  `).join('');
 
-  .music-title {
-    min-width: auto;
-    flex: 1;
-    font-size: 0.85rem;
+  form.innerHTML = `
+    ${formFields.map(field => {
+      if (field.type === 'select') {
+        return `
+          <label class="full-width">
+            <span>${field.label}</span>
+            <select name="${field.key}">
+              ${field.options.map(option => `<option value="${option}" ${selectedPlayer[field.key] === option ? 'selected' : ''}>${option}</option>`).join('')}
+            </select>
+          </label>
+        `;
+      }
+
+      return `
+        <label class="${field.key === 'club' ? 'full-width' : ''}">
+          <span>${field.label}</span>
+          <input name="${field.key}" type="text" value="${selectedPlayer[field.key] ?? ''}" />
+        </label>
+      `;
+    }).join('')}
+    ${statsField}
+  `;
+
+  if (editor.classList.contains('hidden')) {
+    editor.classList.remove('hidden');
   }
 }
 
-/* ===== LIGHT MODE ===== */
-body.light-mode .settings-panel {
-  background: rgba(245, 245, 245, 0.95);
-  border-left-color: #0099cc;
+function setTab(tabName) {
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.classList.toggle('active', button.dataset.tab === tabName);
+  });
+
+  document.getElementById('rankingsTab').classList.toggle('hidden', tabName !== 'rankings');
+  document.getElementById('squadTab').classList.toggle('hidden', tabName !== 'squad');
 }
 
-body.light-mode .settings-header h2,
-body.light-mode .settings-section h3 {
-  color: #0099cc;
+function checkAdminAccess() {
+  const emailInput = document.getElementById('adminEmailInput');
+  const editor = document.getElementById('adminEditor');
+  const adminValue = emailInput.value.trim().toLowerCase();
+  const savedAdmin = currentAdminEmail.trim().toLowerCase();
+
+  if (adminValue === savedAdmin || adminValue === DEFAULT_ADMIN_EMAIL.toLowerCase()) {
+    currentAdminEmail = adminValue || savedAdmin;
+    localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
+    editor.classList.remove('hidden');
+    return true;
+  }
+
+  editor.classList.add('hidden');
+  return false;
 }
 
-body.light-mode .close-btn,
-body.light-mode .close-btn:hover {
-  color: #0099cc;
+function savePlayerData() {
+  const form = document.getElementById('playerForm');
+  const players = getPlayers();
+  const playerIndex = players.findIndex(player => player.id === selectedPlayerId);
+
+  if (playerIndex === -1) return;
+
+  const formData = new FormData(form);
+  const nextName = String(formData.get('name') || '').trim();
+  const nextClub = String(formData.get('club') || '').trim();
+  const nextPosition = String(formData.get('position') || 'GK');
+
+  const updatedStats = {};
+  allStats.forEach(stat => {
+    updatedStats[stat] = normalizeStatValue(formData.get(stat));
+  });
+
+  players[playerIndex] = {
+    ...players[playerIndex],
+    name: nextName || players[playerIndex].name,
+    club: nextClub || players[playerIndex].club,
+    position: nextPosition,
+    stats: updatedStats
+  };
+
+  savePlayers(players);
+  renderSummary();
+  renderRankingGrid();
+  renderSquadGrid();
+  renderAdminPanel();
 }
 
-body.light-mode .setting-item label {
-  color: var(--text-dark);
+function attachEvents() {
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+      setTab(button.dataset.tab);
+    });
+  });
+
+  document.getElementById('adminToggleBtn').addEventListener('click', () => {
+    const panel = document.getElementById('adminPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) {
+      document.getElementById('adminEmailInput').focus();
+    }
+  });
+
+  document.getElementById('closeAdminPanelBtn').addEventListener('click', () => {
+    document.getElementById('adminPanel').classList.add('hidden');
+  });
+
+  document.getElementById('unlockAdminBtn').addEventListener('click', () => {
+    const unlocked = checkAdminAccess();
+    if (unlocked) {
+      renderAdminPanel();
+      document.getElementById('playerSelect').focus();
+    }
+  });
+
+  document.getElementById('playerSelect').addEventListener('change', (event) => {
+    selectedPlayerId = event.target.value;
+    renderAdminPanel();
+  });
+
+  document.getElementById('savePlayerBtn').addEventListener('click', savePlayerData);
 }
 
-body.light-mode .setting-item input {
-  background: rgba(0, 153, 204, 0.1);
-  border-color: #0099cc;
-  color: var(--text-dark);
+function init() {
+  const players = getPlayers();
+  if (players.length) {
+    selectedPlayerId = players[0].id;
+  }
+
+  localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
+  renderSummary();
+  renderRankingGrid();
+  renderSquadGrid();
+  attachEvents();
+  document.getElementById('adminPanel').classList.add('hidden');
 }
 
-body.light-mode .music-player {
-  background: linear-gradient(135deg, rgba(245, 245, 245, 0.95) 0%, rgba(232, 232, 232, 0.95) 100%);
-  border-color: #0099cc;
-}
+init();
 
-body.light-mode .play-btn,
-body.light-mode .stop-btn {
-  background: #0099cc;
-  color: white;
-}
-
-body.light-mode .music-title {
-  color: #0099cc;
-}
-
-body.light-mode .top-column {
-  background: linear-gradient(135deg, rgba(0, 153, 204, 0.08) 0%, rgba(0, 153, 204, 0.03) 100%);
-  border-color: #0099cc;
-}
-
-body.light-mode .top-column h2 {
-  color: #0099cc;
-}
-
-body.light-mode .top-column p {
-  color: #666;
-}
-
-body.light-mode .column-card {
-  background: linear-gradient(135deg, rgba(0, 153, 204, 0.05) 0%, rgba(0, 153, 204, 0.02) 100%);
-  border-color: #0099cc;
-}
-
-body.light-mode .column-card h3 {
-  color: #0099cc;
-}
-
-body.light-mode .column-card input,
-body.light-mode .column-card textarea {
-  background: rgba(0, 153, 204, 0.08);
-  border-color: #0099cc;
-  color: var(--text-dark);
-}
-
-body.light-mode .add-column-btn {
-  background: linear-gradient(135deg, #0099cc 0%, #0077aa 100%);
-  color: white;
-}
-
-body.light-mode .settings-btn {
-  background: #0099cc;
-}
+window.addEventListener('storage', () => {
+  renderSummary();
+  renderRankingGrid();
+  renderSquadGrid();
+});

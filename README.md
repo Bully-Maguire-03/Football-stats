@@ -3,97 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PitchRank - Football Player Rankings</title>
+  <title>PitchRank | Player Rankings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="header">
-    <div class="header-content">
-      <h1 class="site-title">⚽ PitchRank</h1>
-      <p class="site-tagline">Rank Football Players Based on Match Performance</p>
-    </div>
-  </header>
-
-  <button class="settings-btn" onclick="toggleSettings()">⚙️ Settings</button>
-
-  <div class="settings-panel" id="settingsPanel">
-    <div class="settings-content">
-      <div class="settings-header">
-        <h2>Settings</h2>
-        <button class="close-btn" onclick="toggleSettings()">✕</button>
-      </div>
-
-      <div class="settings-section">
-        <h3>Theme & Background</h3>
-        <div class="setting-item">
-          <label for="themeToggle">🌙 Dark Mode:</label>
-          <input type="checkbox" id="themeToggle" onchange="toggleTheme()" />
-        </div>
-
-        <div class="setting-item">
-          <label for="bgColor">🎨 Background Color:</label>
-          <input type="color" id="bgColor" onchange="changeBackground()" />
-        </div>
-
-        <div class="setting-item">
-          <label for="bgImage">🖼️ Background Image URL:</label>
-          <input type="text" id="bgImage" placeholder="Enter image URL..." onchange="changeBackground()" />
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="crest crest-barca">FC</div>
+        <div class="brand-copy">
+          <span class="brand-kicker">PitchRank</span>
+          <h1>Football Player Rankings</h1>
         </div>
       </div>
 
-      <div class="settings-section">
-        <h3>Music Player</h3>
-        <div class="setting-item">
-          <label for="musicToggle">🎵 Enable Music:</label>
-          <input type="checkbox" id="musicToggle" onchange="toggleMusicPlayer()" />
+      <div class="header-actions">
+        <button class="tab-button active" data-tab="rankings">Rankings</button>
+        <button class="tab-button" data-tab="squad">Squad</button>
+        <button id="adminToggleBtn" class="admin-toggle-btn">Admin</button>
+      </div>
+    </header>
+
+    <aside id="adminPanel" class="admin-panel hidden">
+      <div class="admin-header">
+        <h3>Admin Panel</h3>
+        <button id="closeAdminPanelBtn" class="panel-close-btn" aria-label="Close admin panel">✕</button>
+      </div>
+
+      <div class="admin-login-box">
+        <label for="adminEmailInput">Admin Gmail</label>
+        <input id="adminEmailInput" type="email" placeholder="yourname@gmail.com" />
+        <button id="unlockAdminBtn" class="unlock-btn">Unlock Editing</button>
+      </div>
+
+      <div id="adminEditor" class="admin-editor hidden">
+        <div class="editor-row">
+          <label for="playerSelect">Player</label>
+          <select id="playerSelect"></select>
         </div>
 
-        <div class="setting-item">
-          <label for="musicUrl">🔗 Music URL:</label>
-          <input type="text" id="musicUrl" placeholder="Enter .mp3 or .wav URL..." />
+        <div id="playerForm" class="player-form"></div>
+        <button id="savePlayerBtn" class="save-btn">Save Changes</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <section id="rankingsTab" class="tab-panel active">
+        <div class="summary-strip">
+          <div class="summary-card accent">
+            <span>Goalkeepers</span>
+            <strong id="summaryGK">0</strong>
+          </div>
+          <div class="summary-card blue">
+            <span>Defenders</span>
+            <strong id="summaryDF">0</strong>
+          </div>
+          <div class="summary-card green">
+            <span>Midfielders</span>
+            <strong id="summaryMF">0</strong>
+          </div>
+          <div class="summary-card orange">
+            <span>Attackers</span>
+            <strong id="summaryAT">0</strong>
+          </div>
         </div>
 
-        <div class="music-presets">
-          <p>Quick Add:</p>
-          <button class="preset-btn" onclick="addPresetMusic('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')">Sample Music 1</button>
-          <button class="preset-btn" onclick="addPresetMusic('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3')">Sample Music 2</button>
-          <button class="preset-btn" onclick="addPresetMusic('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3')">Sample Music 3</button>
-        </div>
+        <div id="rankingGrid" class="ranking-grid"></div>
+      </section>
 
-        <button onclick="loadMusic()" class="load-music-btn">+ Load Music</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="music-player" id="musicPlayer" style="display: none;">
-    <div class="player-controls">
-      <button class="play-btn" onclick="playPauseMusic()">▶️</button>
-      <button class="stop-btn" onclick="stopMusic()">⏹️</button>
-      <div class="volume-control">
-        <span>🔊</span>
-        <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume()" />
-      </div>
-      <span id="musicTitle" class="music-title">No Music Loaded</span>
-      <button class="remove-music-btn" onclick="removeMusic()">✕</button>
-    </div>
-    <audio id="audioPlayer"></audio>
-  </div>
-
-  <div class="container">
-    <div class="top-column">
-      <h2>📊 Stats Overview</h2>
-      <div id="topColumnContent">
-        <p>Add your stats here to track player performance</p>
-      </div>
-    </div>
-
-    <div class="main-container">
-      <div class="columns-container" id="columnsContainer"></div>
-      <button class="add-column-btn" onclick="addColumn()">+ Add Player Column</button>
-    </div>
+      <section id="squadTab" class="tab-panel hidden">
+        <div id="squadGrid" class="squad-grid"></div>
+      </section>
+    </main>
   </div>
 
   <script src="script.js"></script>
