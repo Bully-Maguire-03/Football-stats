@@ -1,1 +1,194 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PitchRank | Football Stats</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"></head><body><header class="header"><div><div class="eyebrow">PitchRank</div><h1>⚽ Football Player Rankings</h1><p>Rank players by match performance</p></div><nav><button data-tab="rankings">Rankings</button><button data-tab="events">Match Events</button><button data-tab="player">My Stats</button><button data-tab="history">History</button><button id="settingsBtn">⚙ Settings</button><button id="adminBtn">Admin</button></nav></header><aside id="settings" class="drawer"><button class="close" data-close="settings">×</button><h2>Settings</h2><label>Light theme <input id="theme" type="checkbox"></label><label>Background color <input id="bg" type="color" value="#0b1220"></label><label>Background image URL <input id="bgImage" type="url" placeholder="https://..."></label><button id="applyBg">Apply background</button><hr><h3>Music player</h3><input id="musicUrl" placeholder="Direct .mp3/.wav URL"><button id="loadMusic">Load music</button><audio id="audio" controls></audio></aside><aside id="admin" class="drawer"><button class="close" data-close="admin">×</button><h2>Admin panel</h2><input id="adminEmail" type="email" placeholder="yourname@gmail.com"><button id="unlock">Unlock editing</button><div id="editor" class="hidden"><select id="playerSelect"></select><div id="form"></div><button id="save">Save player</button><h3>Claim status</h3><div id="claims"></div></div></aside><main><section id="rankings" class="tab"><div class="tools"><input id="search" placeholder="Search player..."><select id="position"><option value="">All positions</option><option>GK</option><option>DF</option><option>MF</option><option>AT</option></select></div><div id="summary" class="summary"></div><div id="grid" class="grid"></div></section><section id="events" class="tab hidden panel"><h2>⚡ Match Event Logger</h2><div class="event-form"><select id="eventPlayer"></select><select id="eventType"></select><input id="quantity" type="number" min="1" value="1"><button id="apply">Apply event</button></div></section><section id="player" class="tab hidden panel"><h2>🧑 My read-only stats</h2><div id="claim"></div><div id="dashboard"></div></section><section id="history" class="tab hidden panel"><h2>📋 Match history</h2><div id="historyList"></div></section></main><script src="script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PitchRank | Football Rankings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">⚽</div>
+          <div class="brand-copy">
+            <span class="eyebrow">PitchRank</span>
+            <h1>Football Player Rankings</h1>
+          </div>
+        </div>
+
+        <nav class="nav-bar" aria-label="Main navigation">
+          <button class="nav-btn active" data-tab="rankings">Rankings</button>
+          <button class="nav-btn" data-tab="events">Events</button>
+          <button class="nav-btn" data-tab="profile">Profile</button>
+          <button class="nav-btn" data-tab="suggestions">Suggestions</button>
+          <button class="nav-btn" id="adminTabBtn">Admin</button>
+        </nav>
+
+        <div class="user-area">
+          <button id="loginBtn" class="login-btn">Sign in</button>
+        </div>
+      </header>
+
+      <main class="main-area">
+        <section id="rankingsPanel" class="tab-panel active">
+          <div class="toolbar">
+            <input id="searchInput" type="text" placeholder="Search player..." />
+            <select id="positionFilter">
+              <option value="">All positions</option>
+              <option value="GK">Goalkeepers</option>
+              <option value="DF">Defenders</option>
+              <option value="MF">Midfielders</option>
+              <option value="AT">Attackers</option>
+            </select>
+            <select id="sortFilter">
+              <option value="points">Top points</option>
+              <option value="name">Name</option>
+              <option value="club">Club</option>
+            </select>
+          </div>
+
+          <div class="leaderboard-summary" id="leaderboardSummary"></div>
+          <div id="rankingGrid" class="ranking-grid"></div>
+        </section>
+
+        <section id="eventsPanel" class="tab-panel hidden">
+          <div class="panel-card wide-panel">
+            <div class="section-header">
+              <h2>Match Event Logger</h2>
+              <span class="chip">Coaching tool</span>
+            </div>
+
+            <div class="event-form">
+              <div class="field-wrap">
+                <label>Player</label>
+                <select id="eventPlayerSelect"></select>
+              </div>
+              <div class="field-wrap">
+                <label>Event</label>
+                <select id="eventTypeSelect"></select>
+              </div>
+              <div class="field-wrap">
+                <label>Quantity</label>
+                <input id="eventQuantity" type="number" min="1" value="1" />
+              </div>
+              <div class="field-wrap action-wrap">
+                <label class="ghost-label">Apply</label>
+                <button id="applyEventBtn" class="primary-btn">Apply Event</button>
+              </div>
+            </div>
+
+            <div id="historyList" class="history-list"></div>
+          </div>
+        </section>
+
+        <section id="profilePanel" class="tab-panel hidden">
+          <div class="panel-card profile-layout">
+            <div class="profile-intro">
+              <div class="section-header compact-header">
+                <h2>Player dashboard</h2>
+                <span class="chip accent">Logged in</span>
+              </div>
+
+              <div id="loginStatusBox" class="login-status-box">
+                <p>You are not signed in yet.</p>
+                <button id="loginFromProfile" class="primary-btn small-btn">Sign in</button>
+              </div>
+
+              <div id="playerClaimCard" class="player-card claim-card hidden"></div>
+            </div>
+
+            <div class="profile-content">
+              <div class="mini-panel">
+                <h3>My stats</h3>
+                <div id="playerStatsGrid" class="stats-grid"></div>
+              </div>
+
+              <div class="mini-panel">
+                <h3>Suggestion / feedback</h3>
+                <form id="suggestionForm" class="suggestion-form">
+                  <textarea id="suggestionText" placeholder="Tell us about a wrong stat, a bug, or a feature you want added..."></textarea>
+                  <button type="submit" class="primary-btn">Send suggestion</button>
+                </form>
+                <div id="suggestionList" class="suggestion-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="suggestionsPanel" class="tab-panel hidden">
+          <div class="panel-card wide-panel">
+            <div class="section-header">
+              <h2>Community suggestions</h2>
+              <span class="chip">Inbox</span>
+            </div>
+            <div id="publicSuggestions" class="public-suggestions"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <aside id="authModal" class="modal hidden" aria-modal="true" role="dialog">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Sign in</h3>
+          <button id="closeAuthModal" class="close-btn" aria-label="Close sign in">×</button>
+        </div>
+
+        <div class="auth-form">
+          <label>
+            <span>Full name</span>
+            <input id="authName" type="text" placeholder="Enter your name" />
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input id="authEmail" type="email" placeholder="you@example.com" />
+          </label>
+
+          <label>
+            <span>Linked player</span>
+            <input id="authPlayer" type="text" placeholder="Player name (optional)" />
+          </label>
+
+          <button id="submitAuth" class="primary-btn wide-btn">Continue</button>
+        </div>
+      </div>
+    </aside>
+
+    <aside id="adminPanel" class="admin-panel hidden">
+      <div class="admin-header">
+        <h3>Admin panel</h3>
+        <button id="closeAdminPanel" class="close-btn" aria-label="Close admin panel">×</button>
+      </div>
+
+      <div class="admin-auth">
+        <label>
+          <span>Admin email</span>
+          <input id="adminEmailInput" type="email" placeholder="yourname@gmail.com" />
+        </label>
+        <button id="unlockAdminBtn" class="primary-btn">Unlock editing</button>
+      </div>
+
+      <div id="adminEditor" class="admin-editor hidden">
+        <div class="field-wrap compact-field">
+          <label>Player</label>
+          <select id="adminPlayerSelect"></select>
+        </div>
+
+        <div id="adminPlayerForm" class="admin-player-form"></div>
+        <button id="saveAdminPlayer" class="primary-btn wide-btn">Save player</button>
+
+        <div class="claimed-list-wrap">
+          <h4>Claimed accounts</h4>
+          <div id="claimedList" class="claimed-list"></div>
+        </div>
+      </div>
+    </aside>
+
+    <script src="script.js"></script>
+  </body>
+</html>

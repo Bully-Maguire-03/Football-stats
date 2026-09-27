@@ -1,1 +1,630 @@
-const KEY='pitchrank_merged_v1',ADMIN='yourname@gmail.com';const rules={GK:[['Save Made','Reflexes',.15],['Clean Sheet','Positioning',.4],['Goal Conceded','Positioning',-.2]],DF:[['Successful Tackle','Tackling',.25],['Interception','Awareness',.2],['Clean Sheet','Awareness',.3]],MF:[['Assist','Vision',.3],['Chance Created','Vision',.15],['Successful Dribble','Ball Control',.15],['Ball Loss','Ball Control',-.12]],AT:[['Goal Scored','Finishing',.35],['Shot on Target','Shot Power',.1],['Big Chance Missed','Finishing',-.25],['Successful Dribble','Dribbling',.15]],ALL:[['Ball Recovery','Physical',.05],['Sprint Won','Pace',.05],['Red Card','Physical',-.5]]};const players0=[['gk-1','Zishan','Barça','GK',{Reflexes:82,Positioning:78,Handling:79}],['df-1','Naresh','Barça','DF',{Tackling:71,Awareness:76,'Aerial Ability':72}],['df-2','Ibrahim','Barça','DF',{Tackling:69,Awareness:74,'Aerial Ability':70}],['mf-1','Ihsan','Barça','MF',{Vision:81,Passing:78,'Ball Control':80}],['mf-2','M.Akhsar','Barça','MF',{Vision:78,Passing:77,'Ball Control':76}],['mf-3','Rusndi','Barça','MF',{Vision:72,Passing:80,'Ball Control':73}],['mf-4','Suhail','Barça','MF',{Vision:77,Passing:76,'Ball Control':74}],['at-1','Vaibhav','Barça','AT',{Finishing:79,'Shot Power':76,Dribbling:75}],['at-2','M.Ali','Barça','AT',{Finishing:70,'Shot Power':73,Dribbling:78}],['gk-2','Isam','Madrid','GK',{Reflexes:80,Positioning:76,Handling:78}],['df-3','Parthiv','Madrid','DF',{Tackling:72,Awareness:75,'Aerial Ability':71}],['df-4','Shahbaz','Madrid','DF',{Tackling:66,Awareness:70,'Aerial Ability':68}],['mf-5','Khush','Madrid','MF',{Vision:73,Passing:78,'Ball Control':79}],['mf-6','Ishan','Madrid','MF',{Vision:75,Passing:73,'Ball Control':72}],['mf-7','Mishal','Madrid','MF',{Vision:74,Passing:75,'Ball Control':77}],['mf-8','Zayan','Madrid','MF',{Vision:76,Passing:74,'Ball Control':75}],['at-3','Sayed','Madrid','AT',{Finishing:72,'Shot Power':74,Dribbling:76}],['at-4','Dhruvlal','Madrid','AT',{Finishing:75,'Shot Power':73,Dribbling:74}]].map(x=>({id:x[0],name:x[1],club:x[2],position:x[3],stats:x[4],claimed:false,points:0}));let db=JSON.parse(localStorage.getItem(KEY)||'null')||{players:players0,history:[]};const $=id=>document.getElementById(id);const posName={GK:'Goalkeepers',DF:'Defenders',MF:'Midfielders',AT:'Attackers'};function save(){localStorage.setItem(KEY,JSON.stringify(db))}function list(p){return [...(rules[p]||[]),...rules.ALL]}function calc(p){return Number(list(p.position).reduce((n,r)=>n+Number(p.stats[r[1]]||0)*r[2],0).toFixed(2))}function refresh(){db.players.forEach(p=>p.points=calc(p));save();render()}function render(){let q=($('search')?.value||'').toLowerCase(),f=$('position')?.value||'';$('summary').innerHTML=['GK','DF','MF','AT'].map(x=>`<div><span>${posName[x]}</span><strong>${db.players.filter(p=>p.position==x).length}</strong></div>`).join('');$('grid').innerHTML=['GK','DF','MF','AT'].filter(x=>!f||x==f).map(x=>`<div class="position"><h2>${posName[x]}</h2><div class="cards">${db.players.filter(p=>p.position==x&&(!q||p.name.toLowerCase().includes(q))).sort((a,b)=>b.points-a.points).map(p=>`<article class="card"><div class="cardtop"><span>#${db.players.filter(z=>z.position==x).sort((a,b)=>b.points-a.points).indexOf(p)+1}</span><span class="points">${p.points} pts</span></div><div class="row"><span class="name">${p.name}</span><span class="muted">${p.club} · ${p.position}</span></div><div class="pills">${Object.entries(p.stats).slice(0,5).map(([k,v])=>`<span class="pill">${k}<b>${v}</b></span>`).join('')}</div></article>`).join('')||'<p class="muted">No players found.</p>'}</div></div>`).join('');$('eventPlayer').innerHTML=db.players.map(p=>`<option value="${p.id}">${p.name} (${p.position})</option>`).join('');updateEvents();renderHistory();renderClaim();renderDashboard()}function updateEvents(){let p=db.players.find(x=>x.id==$('eventPlayer').value)||db.players[0];$('eventType').innerHTML=list(p.position).map(r=>`<option value="${r[0]}">${r[0]}</option>`).join('')}function apply(){let p=db.players.find(x=>x.id==$('eventPlayer').value),r=list(p.position).find(x=>x[0]==$('eventType').value),n=Math.max(1,Number($('quantity').value)||1);if(!p||!r)return;p.stats[r[1]]=Number((Number(p.stats[r[1]]||0)+r[2]*n).toFixed(2));db.history.push({at:new Date().toLocaleString(),name:p.name,event:r[0],quantity:n,delta:r[2]*n});refresh()}function renderHistory(){$('historyList').innerHTML=db.history.slice().reverse().map(x=>`<div class="playerstat"><span>${x.name}: ${x.event} ×${x.quantity}<small class="muted"> ${x.at}</small></span><b>${x.delta>0?'+':''}${x.delta.toFixed(2)}</b></div>`).join('')||'<p class="muted">No events yet.</p>'}function renderClaim(){let p=db.players.find(x=>x.claimed);$('claim').innerHTML=p?`<div class="card"><b>${p.name}</b> <span class="status">Claimed</span><button id="unclaim">Change player</button></div>`:`<div class="claimbox"><input id="claimName" placeholder="Enter your player name"><button id="claimBtn">Claim profile</button></div>`;if($('claimBtn'))$('claimBtn').onclick=()=>{let v=$('claimName').value.trim().toLowerCase(),p=db.players.find(x=>x.name.toLowerCase()==v);if(!p)return alert('Player not found.');db.players.forEach(x=>x.claimed=false);p.claimed=true;save();render()};if($('unclaim'))$('unclaim').onclick=()=>{db.players.forEach(x=>x.claimed=false);save();render()}}function renderDashboard(){let p=db.players.find(x=>x.claimed);$('dashboard').innerHTML=p?`<div class="card"><h3>${p.name} · ${p.club}</h3><p>Read-only stats. Admin updates appear after refresh.</p>${Object.entries(p.stats).map(([k,v])=>`<div class="playerstat"><span>${k}</span><b>${v}</b></div>`).join('')}</div>`:'<p class="muted">Claim your profile above to see your stats.</p>'}function open(id){$(id).classList.add('open')}function close(id){$(id).classList.remove('open')}function adminRender(){let s=$('playerSelect');s.innerHTML=db.players.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');s.onchange=adminRender;let p=db.players.find(x=>x.id==s.value)||db.players[0];$('form').innerHTML=`<label>Name<input name="name" value="${p.name}"></label><label>Club<input name="club" value="${p.club}"></label><label>Position<select name="position">${['GK','DF','MF','AT'].map(x=>`<option ${p.position==x?'selected':''}>${x}</option>`).join('')}</select></label>${Object.keys(p.stats).map(k=>`<label>${k}<input name="${k}" type="number" value="${p.stats[k]}"></label>`).join('')}`;$('claims').innerHTML=db.players.map(x=>`<div class="playerstat"><span>${x.name}</span><b class="${x.claimed?'status':'bad'}">${x.claimed?'Claimed':'Not claimed'}</b></div>`).join('')}function bind(){document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));$(b.dataset.tab).classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});$('search').oninput=render;$('position').onchange=render;$('eventPlayer').onchange=updateEvents;$('apply').onclick=apply;$('settingsBtn').onclick=()=>open('settings');$('adminBtn').onclick=()=>open('admin');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close));$('theme').onchange=()=>document.body.classList.toggle('light', $('theme').checked);$('applyBg').onclick=()=>{document.body.style.background=$('bgImage').value?`url(${$('bgImage').value}) center/cover fixed`:$('bg').value};$('loadMusic').onclick=()=>{$('audio').src=$('musicUrl').value;$('audio').play().catch(()=>{})};$('unlock').onclick=()=>{if($('adminEmail').value.toLowerCase()==ADMIN){$('editor').classList.remove('hidden');adminRender()}else alert('Access denied')};$('save').onclick=()=>{let p=db.players.find(x=>x.id==$('playerSelect').value),d=new FormData($('form'));p.name=d.get('name');p.club=d.get('club');p.position=d.get('position');Object.keys(p.stats).forEach(k=>p.stats[k]=Number(d.get(k))||0);refresh();adminRender()};$('theme').checked=localStorage.theme=='light'}refresh();bind();setInterval(render,3000);
+const STORAGE_KEY = 'pitchrank_merged_data_v2';
+const ADMIN_EMAIL = 'yourname@gmail.com';
+
+const pointRules = {
+  GK: [
+    ['Save Made', 'Reflexes', 0.15],
+    ['Clean Sheet', 'Positioning', 0.4],
+    ['Goal Conceded', 'Positioning', -0.2],
+    ['Long Kick', 'Distribution', 0.1]
+  ],
+  DF: [
+    ['Successful Tackle', 'Tackling', 0.25],
+    ['Interception', 'Awareness', 0.2],
+    ['Aerial Duel Won', 'Aerial Ability', 0.15],
+    ['Clean Sheet', 'Awareness', 0.3]
+  ],
+  MF: [
+    ['Assist', 'Vision', 0.3],
+    ['Chance Created', 'Vision', 0.15],
+    ['Successful Dribble', 'Ball Control', 0.15],
+    ['Defensive Tackle', 'Defending', 0.15]
+  ],
+  AT: [
+    ['Goal Scored', 'Finishing', 0.35],
+    ['Shot on Target', 'Shot Power', 0.1],
+    ['Big Chance Missed', 'Finishing', -0.25],
+    ['Successful Dribble', 'Dribbling', 0.15]
+  ],
+  ALL: [
+    ['Ball Recovery', 'Physical', 0.05],
+    ['Sprint Won', 'Pace', 0.05],
+    ['Foul Committed', 'Physical', -0.05],
+    ['Red Card', 'Physical', -0.5]
+  ]
+};
+
+const defaultPlayers = [
+  { id: 'gk-1', name: 'Zishan', club: 'Barça', position: 'GK', claimedBy: null, email: '', stats: { Reflexes: 82, Positioning: 78, Handling: 79, Distribution: 74, Physical: 68, Pace: 70 } },
+  { id: 'df-1', name: 'Naresh', club: 'Barça', position: 'DF', claimedBy: null, email: '', stats: { Tackling: 71, Awareness: 76, 'Aerial Ability': 72, Physical: 71, Pace: 72 } },
+  { id: 'df-2', name: 'Ibrahim', club: 'Barça', position: 'DF', claimedBy: null, email: '', stats: { Tackling: 69, Awareness: 74, 'Aerial Ability': 70, Physical: 69, Pace: 73 } },
+  { id: 'mf-1', name: 'Ihsan', club: 'Barça', position: 'MF', claimedBy: null, email: '', stats: { Vision: 81, Passing: 78, 'Ball Control': 80, Defending: 72, Physical: 74, Pace: 76 } },
+  { id: 'mf-2', name: 'M.Akhsar', club: 'Barça', position: 'MF', claimedBy: null, email: '', stats: { Vision: 78, Passing: 77, 'Ball Control': 76, Defending: 68, Physical: 72, Pace: 79 } },
+  { id: 'mf-3', name: 'Rusndi', club: 'Barça', position: 'MF', claimedBy: null, email: '', stats: { Vision: 72, Passing: 80, 'Ball Control': 73, Defending: 71, Physical: 75, Pace: 74 } },
+  { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', claimedBy: null, email: '', stats: { Vision: 77, Passing: 76, 'Ball Control': 74, Defending: 75, Physical: 76, Pace: 70 } },
+  { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', claimedBy: null, email: '', stats: { Finishing: 79, 'Shot Power': 76, Dribbling: 75, Positioning: 72, Physical: 71, Pace: 82 } },
+  { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', claimedBy: null, email: '', stats: { Finishing: 70, 'Shot Power': 73, Dribbling: 78, Positioning: 70, Physical: 68, Pace: 80 } },
+  { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', claimedBy: null, email: '', stats: { Reflexes: 80, Positioning: 76, Handling: 78, Distribution: 72, Physical: 70, Pace: 69 } },
+  { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', claimedBy: null, email: '', stats: { Tackling: 72, Awareness: 75, 'Aerial Ability': 71, Physical: 73, Pace: 74 } },
+  { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', claimedBy: null, email: '', stats: { Tackling: 66, Awareness: 70, 'Aerial Ability': 68, Physical: 67, Pace: 71 } },
+  { id: 'mf-5', name: 'Khush', club: 'Madrid', position: 'MF', claimedBy: null, email: '', stats: { Vision: 73, Passing: 78, 'Ball Control': 79, Defending: 71, Physical: 72, Pace: 77 } },
+  { id: 'mf-6', name: 'Ishan', club: 'Madrid', position: 'MF', claimedBy: null, email: '', stats: { Vision: 75, Passing: 73, 'Ball Control': 72, Defending: 70, Physical: 71, Pace: 75 } },
+  { id: 'mf-7', name: 'Mishal', club: 'Madrid', position: 'MF', claimedBy: null, email: '', stats: { Vision: 74, Passing: 75, 'Ball Control': 77, Defending: 72, Physical: 73, Pace: 76 } },
+  { id: 'mf-8', name: 'Zayan', club: 'Madrid', position: 'MF', claimedBy: null, email: '', stats: { Vision: 76, Passing: 74, 'Ball Control': 75, Defending: 73, Physical: 72, Pace: 78 } },
+  { id: 'at-3', name: 'Sayed', club: 'Madrid', position: 'AT', claimedBy: null, email: '', stats: { Finishing: 72, 'Shot Power': 74, Dribbling: 76, Positioning: 71, Physical: 70, Pace: 81 } },
+  { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', claimedBy: null, email: '', stats: { Finishing: 75, 'Shot Power': 73, Dribbling: 74, Positioning: 70, Physical: 72, Pace: 79 } }
+];
+
+const sessionDefaults = {
+  activeUser: null,
+  suggestions: []
+};
+
+const positionLabels = { GK: 'Goalkeepers', DF: 'Defenders', MF: 'Midfielders', AT: 'Attackers' };
+
+const els = {
+  rankingGrid: document.getElementById('rankingGrid'),
+  summary: document.getElementById('leaderboardSummary'),
+  searchInput: document.getElementById('searchInput'),
+  positionFilter: document.getElementById('positionFilter'),
+  sortFilter: document.getElementById('sortFilter'),
+  eventPlayerSelect: document.getElementById('eventPlayerSelect'),
+  eventTypeSelect: document.getElementById('eventTypeSelect'),
+  eventQuantity: document.getElementById('eventQuantity'),
+  historyList: document.getElementById('historyList'),
+  loginStatusBox: document.getElementById('loginStatusBox'),
+  playerClaimCard: document.getElementById('playerClaimCard'),
+  playerStatsGrid: document.getElementById('playerStatsGrid'),
+  suggestionForm: document.getElementById('suggestionForm'),
+  suggestionText: document.getElementById('suggestionText'),
+  suggestionList: document.getElementById('suggestionList'),
+  publicSuggestions: document.getElementById('publicSuggestions'),
+  authModal: document.getElementById('authModal'),
+  authName: document.getElementById('authName'),
+  authEmail: document.getElementById('authEmail'),
+  authPlayer: document.getElementById('authPlayer'),
+  adminPanel: document.getElementById('adminPanel'),
+  adminEmailInput: document.getElementById('adminEmailInput'),
+  adminPlayerSelect: document.getElementById('adminPlayerSelect'),
+  adminPlayerForm: document.getElementById('adminPlayerForm'),
+  claimedList: document.getElementById('claimedList'),
+  adminEditor: document.getElementById('adminEditor'),
+  adminTabBtn: document.getElementById('adminTabBtn')
+};
+
+function getStorageData() {
+  const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  const base = {
+    players: defaultPlayers,
+    history: [],
+    suggestions: [],
+    activeUser: null
+  };
+
+  if (!stored) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
+    return base;
+  }
+
+  return {
+    ...base,
+    ...stored,
+    players: Array.isArray(stored.players) && stored.players.length ? stored.players : defaultPlayers,
+    history: Array.isArray(stored.history) ? stored.history : [],
+    suggestions: Array.isArray(stored.suggestions) ? stored.suggestions : [],
+    activeUser: stored.activeUser || null
+  };
+}
+
+function saveStorageData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getData() {
+  return getStorageData();
+}
+
+function getRulesForPosition(position) {
+  return [...(pointRules[position] || []), ...pointRules.ALL];
+}
+
+function calculatePlayerPoints(player) {
+  const rules = getRulesForPosition(player.position);
+  return Number(rules.reduce((total, rule) => {
+    const stat = rule[1];
+    const value = Number(player.stats?.[stat] || 0);
+    return total + value * rule[2];
+  }, 0).toFixed(2));
+}
+
+function syncPlayerPoints() {
+  const data = getData();
+  data.players = data.players.map((player) => ({
+    ...player,
+    totalPoints: calculatePlayerPoints(player)
+  }));
+  saveStorageData(data);
+  return data;
+}
+
+function getCurrentUser() {
+  const data = getData();
+  return data.activeUser;
+}
+
+function setCurrentUser(user) {
+  const data = getData();
+  data.activeUser = user;
+  saveStorageData(data);
+}
+
+function getClaimedPlayer() {
+  const data = getData();
+  return data.players.find((player) => player.claimedBy && player.claimedBy === getCurrentUser()?.email);
+}
+
+function pickBackground() {
+  const backgrounds = [
+    'linear-gradient(135deg, rgba(8, 15, 28, 0.8), rgba(18, 34, 52, 0.8)), url("https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1600&q=80") center/cover',
+    'linear-gradient(135deg, rgba(7, 17, 28, 0.7), rgba(28, 42, 58, 0.8)), url("https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?auto=format&fit=crop&w=1600&q=80") center/cover',
+    'linear-gradient(135deg, rgba(8, 16, 28, 0.75), rgba(18, 32, 52, 0.85)), url("https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1600&q=80") center/cover',
+    'linear-gradient(135deg, rgba(12, 18, 30, 0.72), rgba(26, 38, 56, 0.82)), url("https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1600&q=80") center/cover'
+  ];
+
+  const bg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+  document.body.style.background = bg;
+}
+
+function renderSummary() {
+  const data = getData();
+  const counts = { GK: 0, DF: 0, MF: 0, AT: 0 };
+  data.players.forEach((player) => {
+    counts[player.position] += 1;
+  });
+
+  els.summary.innerHTML = ['GK', 'DF', 'MF', 'AT'].map((pos) => `
+    <div class="summary-tile">
+      <span>${positionLabels[pos]}</span>
+      <strong>${counts[pos]}</strong>
+    </div>
+  `).join('');
+}
+
+function getFilteredPlayers() {
+  const search = (els.searchInput?.value || '').trim().toLowerCase();
+  const filter = els.positionFilter?.value || '';
+  const sortMode = els.sortFilter?.value || 'points';
+
+  const data = getData();
+  let players = data.players.filter((player) => {
+    const matchesText = !search || player.name.toLowerCase().includes(search);
+    const matchesPos = !filter || player.position === filter;
+    return matchesText && matchesPos;
+  });
+
+  players.sort((a, b) => {
+    if (sortMode === 'name') return a.name.localeCompare(b.name);
+    if (sortMode === 'club') return a.club.localeCompare(b.club);
+    return (b.totalPoints || calculatePlayerPoints(b)) - (a.totalPoints || calculatePlayerPoints(a));
+  });
+
+  return players;
+}
+
+function renderRankings() {
+  const players = getFilteredPlayers();
+  const positions = ['GK', 'DF', 'MF', 'AT'];
+  const filter = els.positionFilter.value;
+
+  els.rankingGrid.innerHTML = positions.filter((pos) => !filter || pos === filter).map((pos) => {
+    const list = players.filter((player) => player.position === pos);
+
+    const cards = list.map((player, index) => {
+      const teamClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
+      const points = calculatePlayerPoints(player);
+      const topList = Object.entries(player.stats || {}).slice(0, 4).map(([key, value]) => `
+        <span class="stat-pill">${key}<strong>${value}</strong></span>
+      `).join('');
+
+      return `
+        <article class="player-row-card ${index < 10 ? 'elite' : ''}">
+          <div class="player-head">
+            <span class="player-rank">#${index + 1}</span>
+            <span class="player-points">${points.toFixed(2)} pts</span>
+          </div>
+          <div class="player-main">
+            <span class="player-name">${player.name}</span>
+            <span class="club-badge ${teamClass}">${player.club}</span>
+          </div>
+          <div class="stat-stack">${topList}</div>
+        </article>
+      `;
+    }).join('') || '<div class="player-row-card"><p class="muted">No players found.</p></div>';
+
+    return `
+      <div class="position-column ${pos}">
+        <div class="position-header">
+          <h3>${positionLabels[pos]}</h3>
+          <span class="position-badge">${pos}</span>
+        </div>
+        <div class="player-list">${cards}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateEventChoices() {
+  const data = getData();
+  const player = data.players.find((entry) => entry.id === els.eventPlayerSelect.value) || data.players[0];
+  const rules = getRulesForPosition(player.position);
+  els.eventTypeSelect.innerHTML = rules.map(([label]) => `<option value="${label}">${label}</option>`).join('');
+}
+
+function populateEventPlayerSelect() {
+  const data = getData();
+  els.eventPlayerSelect.innerHTML = data.players.map((player) => `
+    <option value="${player.id}">${player.name} (${player.position})</option>
+  `).join('');
+  updateEventChoices();
+}
+
+function renderHistory() {
+  const data = getData();
+  if (!data.history.length) {
+    els.historyList.innerHTML = '<div class="history-item"><div class="history-meta"><div class="history-name">No events yet</div><div class="history-detail">Log the first match event from the Events tab.</div></div></div>';
+    return;
+  }
+
+  els.historyList.innerHTML = [...data.history].reverse().map((entry) => {
+    const delta = Number(entry.delta || 0);
+    const tone = delta >= 0 ? 'background: rgba(134,239,179,0.12); color: var(--green);' : 'background: rgba(255,123,115,0.12); color: var(--red);';
+    return `
+      <div class="history-item">
+        <div class="history-meta">
+          <div class="history-name">${entry.playerName}</div>
+          <div class="history-detail">${entry.eventLabel} × ${entry.quantity} • ${entry.timestamp}</div>
+        </div>
+        <div class="history-delta" style="${tone}">${delta >= 0 ? '+' : ''}${delta.toFixed(2)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function applyEvent() {
+  const data = getData();
+  const player = data.players.find((entry) => entry.id === els.eventPlayerSelect.value);
+  if (!player) return;
+
+  const eventLabel = els.eventTypeSelect.value;
+  const quantity = Math.max(1, Number(els.eventQuantity.value || 1));
+  const rule = getRulesForPosition(player.position).find(([label]) => label === eventLabel);
+  if (!rule) return;
+
+  const delta = Number((rule[2] * quantity).toFixed(2));
+  player.stats[rule[1]] = Number(((player.stats[rule[1]] || 0) + rule[2] * quantity).toFixed(2));
+
+  data.history.push({
+    timestamp: new Date().toLocaleString(),
+    playerName: player.name,
+    eventLabel,
+    quantity,
+    delta
+  });
+
+  saveStorageData(data);
+  renderRankings();
+  renderHistory();
+  renderPlayerDashboard();
+  renderAdminEditor();
+}
+
+function renderAuthState() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    els.loginStatusBox.innerHTML = `
+      <p>You are not signed in yet.</p>
+      <button id="loginFromProfile" class="primary-btn small-btn">Sign in</button>
+    `;
+    document.getElementById('loginFromProfile').onclick = openAuthModal;
+    els.playerClaimCard.classList.add('hidden');
+    return;
+  }
+
+  const player = getData().players.find((entry) => entry.name.toLowerCase() === user.playerName.toLowerCase()) || null;
+
+  els.loginStatusBox.innerHTML = `
+    <p>Signed in as <strong>${user.name}</strong> (${user.email})</p>
+    <button id="logoutBtn" class="primary-btn small-btn">Log out</button>
+  `;
+  document.getElementById('logoutBtn').onclick = () => {
+    setCurrentUser(null);
+    renderAuthState();
+    renderPlayerDashboard();
+  };
+
+  if (!player) {
+    els.playerClaimCard.classList.remove('hidden');
+    els.playerClaimCard.innerHTML = `
+      <div class="claim-header">
+        <strong>${user.name}</strong>
+        <span class="player-tag">Unlinked</span>
+      </div>
+      <p>You are signed in, but no player was linked. Use the admin or choose a matching player name.</p>
+    `;
+    return;
+  }
+
+  player.claimedBy = user.email;
+  saveStorageData(getData());
+  els.playerClaimCard.classList.remove('hidden');
+  els.playerClaimCard.innerHTML = `
+    <div class="claim-header">
+      <strong>${player.name}</strong>
+      <span class="player-tag">Claimed</span>
+    </div>
+    <p>${player.club} • ${player.position}</p>
+    <p>Total points: <strong>${calculatePlayerPoints(player).toFixed(2)}</strong></p>
+  `;
+}
+
+function renderPlayerDashboard() {
+  const user = getCurrentUser();
+  const data = getData();
+  const player = data.players.find((entry) => {
+    if (!user) return false;
+    return entry.claimedBy === user.email || entry.name.toLowerCase() === user.playerName?.toLowerCase();
+  });
+
+  if (!player) {
+    els.playerStatsGrid.innerHTML = '<div class="stat-box"><span>No linked player</span></div>';
+    return;
+  }
+
+  const stats = Object.entries(player.stats || {});
+  els.playerStatsGrid.innerHTML = stats.map(([key, value]) => `
+    <div class="stat-box"><span>${key}</span><strong>${value}</strong></div>
+  `).join('');
+}
+
+function renderSuggestions() {
+  const data = getData();
+  const user = getCurrentUser();
+
+  if (!user) {
+    els.suggestionList.innerHTML = '<div class="suggestion-item"><strong>Sign in to send suggestions</strong></div>';
+  } else {
+    els.suggestionList.innerHTML = data.suggestions.filter((item) => item.user === user.email).map((item) => `
+      <div class="suggestion-item">
+        <strong>${item.title}</strong>
+        <div>${item.message}</div>
+        <small>${new Date(item.createdAt).toLocaleString()}</small>
+      </div>
+    `).join('') || '<div class="suggestion-item"><strong>No suggestions sent yet.</strong></div>';
+  }
+
+  els.publicSuggestions.innerHTML = data.suggestions.length ? data.suggestions.slice().reverse().map((item) => `
+    <div class="public-suggestion">
+      <strong>${item.title}</strong>
+      <div>${item.message}</div>
+      <small>${item.user} • ${new Date(item.createdAt).toLocaleString()}</small>
+    </div>
+  `).join('') : '<div class="public-suggestion"><strong>No suggestions yet.</strong></div>';
+}
+
+function handleSuggestionSubmit(event) {
+  event.preventDefault();
+  const user = getCurrentUser();
+  if (!user) {
+    alert('Sign in before sending a suggestion.');
+    return;
+  }
+
+  const text = els.suggestionText.value.trim();
+  if (!text) {
+    alert('Write a suggestion or report first.');
+    return;
+  }
+
+  const data = getData();
+  data.suggestions.push({
+    title: 'Player feedback',
+    message: text,
+    user: user.email,
+    createdAt: new Date().toISOString()
+  });
+
+  saveStorageData(data);
+  els.suggestionText.value = '';
+  renderSuggestions();
+}
+
+function openAuthModal() {
+  els.authModal.classList.remove('hidden');
+}
+
+function closeAuthModal() {
+  els.authModal.classList.add('hidden');
+}
+
+function handleAuthSubmit() {
+  const name = els.authName.value.trim();
+  const email = els.authEmail.value.trim();
+  const playerName = els.authPlayer.value.trim();
+
+  if (!name || !email) {
+    alert('Please enter both your name and email.');
+    return;
+  }
+
+  const payload = {
+    name,
+    email,
+    playerName: playerName || name,
+    signedInAt: new Date().toISOString()
+  };
+
+  setCurrentUser(payload);
+  const data = getData();
+  const match = data.players.find((player) => player.name.toLowerCase() === payload.playerName.toLowerCase());
+  if (match) {
+    match.claimedBy = payload.email;
+  }
+  saveStorageData(data);
+  closeAuthModal();
+  renderAuthState();
+  renderPlayerDashboard();
+  renderAdminEditor();
+  renderRankings();
+}
+
+function renderAdminEditor() {
+  const data = getData();
+  const adminUnlocked = els.adminEditor && !els.adminEditor.classList.contains('hidden');
+
+  if (!adminUnlocked) return;
+
+  els.adminPlayerSelect.innerHTML = data.players.map((player) => `
+    <option value="${player.id}">${player.name} (${player.position})</option>
+  `).join('');
+
+  const selected = data.players[0];
+  const player = data.players.find((entry) => entry.id === els.adminPlayerSelect.value) || selected;
+
+  const statFields = Object.entries(player.stats || {}).map(([key, value]) => `
+    <label>
+      <span>${key}</span>
+      <input name="${key}" value="${value}" />
+    </label>
+  `).join('');
+
+  els.adminPlayerForm.innerHTML = `
+    <label class="wide-field">
+      <span>Name</span>
+      <input name="name" value="${player.name}" />
+    </label>
+    <label>
+      <span>Club</span>
+      <input name="club" value="${player.club}" />
+    </label>
+    <label>
+      <span>Position</span>
+      <select name="position">
+        ${['GK','DF','MF','AT'].map((pos) => `<option value="${pos}" ${player.position === pos ? 'selected' : ''}>${pos}</option>`).join('')}
+      </select>
+    </label>
+    ${statFields}
+  `;
+
+  els.claimedList.innerHTML = data.players.filter((p) => p.claimedBy).map((player) => `
+    <div class="claimed-item">
+      <div>
+        <strong>${player.name}</strong>
+        <small>${player.club}</small>
+      </div>
+      <span class="claim-badge">${player.claimedBy}</span>
+    </div>
+  `).join('') || '<div class="claimed-item"><div><strong>No claimed players</strong></div></div>';
+}
+
+function saveAdminPlayer() {
+  const data = getData();
+  const selectedId = els.adminPlayerSelect.value;
+  const player = data.players.find((entry) => entry.id === selectedId);
+  if (!player) return;
+
+  const form = els.adminPlayerForm.querySelectorAll('input, select');
+  const values = {};
+  form.forEach((field) => {
+    values[field.name] = field.value;
+  });
+
+  player.name = values.name || player.name;
+  player.club = values.club || player.club;
+  player.position = values.position || player.position;
+
+  const nextStats = {};
+  Object.entries(player.stats || {}).forEach(([key]) => {
+    nextStats[key] = Number(values[key]) || 0;
+  });
+
+  player.stats = nextStats;
+  saveStorageData(data);
+  syncPlayerPoints();
+  renderRankings();
+  renderSummary();
+  renderPlayerDashboard();
+  renderAdminEditor();
+}
+
+function unlockAdmin() {
+  const entered = (els.adminEmailInput.value || '').trim().toLowerCase();
+  if (entered === ADMIN_EMAIL.toLowerCase()) {
+    els.adminEditor.classList.remove('hidden');
+    renderAdminEditor();
+    return;
+  }
+
+  alert('Access denied. Use your admin email.');
+}
+
+function setupEvents() {
+  document.querySelectorAll('.nav-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.tab;
+      document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
+      if (target === 'rankings') document.getElementById('rankingsPanel').classList.remove('hidden');
+      if (target === 'events') document.getElementById('eventsPanel').classList.remove('hidden');
+      if (target === 'profile') document.getElementById('profilePanel').classList.remove('hidden');
+      if (target === 'suggestions') document.getElementById('suggestionsPanel').classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach((item) => item.classList.toggle('active', item === button));
+    });
+  });
+
+  document.getElementById('adminTabBtn').addEventListener('click', () => {
+    els.adminPanel.classList.remove('hidden');
+  });
+
+  document.getElementById('closeAdminPanel').addEventListener('click', () => {
+    els.adminPanel.classList.add('hidden');
+  });
+
+  document.getElementById('lockAdminBtn')?.addEventListener('click', () => {
+    els.adminPanel.classList.add('hidden');
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', openAuthModal);
+  document.getElementById('loginFromProfile').addEventListener('click', openAuthModal);
+  document.getElementById('closeAuthModal').addEventListener('click', closeAuthModal);
+  document.getElementById('submitAuth').addEventListener('click', handleAuthSubmit);
+
+  document.getElementById('unlockAdminBtn').addEventListener('click', unlockAdmin);
+  document.getElementById('saveAdminPlayer').addEventListener('click', saveAdminPlayer);
+  els.adminPlayerSelect.addEventListener('change', renderAdminEditor);
+
+  els.searchInput.addEventListener('input', renderRankings);
+  els.positionFilter.addEventListener('change', renderRankings);
+  els.sortFilter.addEventListener('change', renderRankings);
+
+  els.eventPlayerSelect.addEventListener('change', updateEventChoices);
+  document.getElementById('applyEventBtn').addEventListener('click', applyEvent);
+
+  els.suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+}
+
+function initialize() {
+  pickBackground();
+  syncPlayerPoints();
+  renderSummary();
+  renderRankings();
+  populateEventPlayerSelect();
+  renderHistory();
+  renderAuthState();
+  renderPlayerDashboard();
+  renderSuggestions();
+  setupEvents();
+  renderAdminEditor();
+}
+
+initialize();
+console.log('PitchRank app initialized');
