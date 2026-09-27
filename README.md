@@ -22,15 +22,17 @@
 
       <div class="header-actions">
         <button class="tab-button active" data-tab="rankings">Rankings</button>
-        <button class="tab-button" data-tab="squad">Squad</button>
+        <button class="tab-button" data-tab="events">Match Events</button>
+        <button class="tab-button" data-tab="history">History</button>
+        <button class="tab-button" data-tab="export">Export</button>
         <button id="adminToggleBtn" class="admin-toggle-btn">Admin</button>
       </div>
     </header>
 
     <aside id="adminPanel" class="admin-panel hidden">
       <div class="admin-header">
-        <h3>Admin Panel</h3>
-        <button id="closeAdminPanelBtn" class="panel-close-btn" aria-label="Close admin panel">✕</button>
+        <h3>⚙️ Admin Panel</h3>
+        <button id="closeAdminPanelBtn" class="panel-close-btn">✕</button>
       </div>
 
       <div class="admin-login-box">
@@ -41,17 +43,29 @@
 
       <div id="adminEditor" class="admin-editor hidden">
         <div class="editor-row">
-          <label for="playerSelect">Player</label>
+          <label for="playerSelect">Select Player</label>
           <select id="playerSelect"></select>
         </div>
-
         <div id="playerForm" class="player-form"></div>
         <button id="savePlayerBtn" class="save-btn">Save Changes</button>
       </div>
     </aside>
 
     <main class="main-area">
+      <!-- RANKINGS TAB -->
       <section id="rankingsTab" class="tab-panel active">
+        <div class="controls-bar">
+          <input type="text" id="searchInput" placeholder="🔍 Search player..." class="search-box" />
+          <select id="filterPosition" class="filter-select">
+            <option value="">All Positions</option>
+            <option value="GK">Goalkeepers</option>
+            <option value="DF">Defenders</option>
+            <option value="MF">Midfielders</option>
+            <option value="AT">Attackers</option>
+          </select>
+          <button id="sortToggle" class="sort-toggle">⬇️ Sort by Points</button>
+        </div>
+
         <div class="summary-strip">
           <div class="summary-card accent">
             <span>Goalkeepers</span>
@@ -74,8 +88,45 @@
         <div id="rankingGrid" class="ranking-grid"></div>
       </section>
 
-      <section id="squadTab" class="tab-panel hidden">
-        <div id="squadGrid" class="squad-grid"></div>
+      <!-- MATCH EVENTS TAB -->
+      <section id="eventsTab" class="tab-panel hidden">
+        <div class="event-logger">
+          <h2>📝 Log Match Event</h2>
+          <div class="event-form">
+            <div class="form-row">
+              <label>Player</label>
+              <select id="eventPlayerSelect"></select>
+            </div>
+            <div class="form-row">
+              <label>Event Type</label>
+              <select id="eventTypeSelect"></select>
+            </div>
+            <div class="form-row">
+              <label>Quantity</label>
+              <input type="number" id="eventQuantity" value="1" min="1" />
+            </div>
+            <button id="applyEventBtn" class="apply-event-btn">⚡ Apply Event</button>
+            <button id="undoLastBtn" class="undo-btn">↶ Undo Last</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY TAB -->
+      <section id="historyTab" class="tab-panel hidden">
+        <h2>📋 Match History</h2>
+        <div id="historyList" class="history-list"></div>
+      </section>
+
+      <!-- EXPORT TAB -->
+      <section id="exportTab" class="tab-panel hidden">
+        <h2>💾 Data Export & Import</h2>
+        <div class="export-controls">
+          <button id="exportJsonBtn" class="export-btn">📥 Export as JSON</button>
+          <button id="exportCsvBtn" class="export-btn">📥 Export as CSV</button>
+          <button id="importBtn" class="import-btn">📤 Import Data</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;" />
+        </div>
+        <div id="exportPreview" class="export-preview"></div>
       </section>
     </main>
   </div>

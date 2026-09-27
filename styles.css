@@ -1,381 +1,492 @@
-const STORAGE_KEYS = {
-  players: 'pitchrank_players_v2',
-  adminEmail: 'pitchrank_admin_email'
-};
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-const DEFAULT_ADMIN_EMAIL = 'yourname@gmail.com';
+:root {
+  --bg: #0c1220;
+  --bg-2: #111b2d;
+  --panel: rgba(19, 28, 43, 0.95);
+  --line: rgba(137, 185, 255, 0.18);
+  --text: #edf4ff;
+  --muted: #98a9c3;
+  --blue: #49a6ff;
+  --cyan: #6fe8ff;
+  --green: #7ee4ae;
+  --orange: #ffb067;
+  --red: #ff786e;
+  --shadow: rgba(8, 15, 30, 0.48);
+}
 
-const positionRules = {
-  GK: {
-    Reflexes: 0.15,
-    Positioning: 0.2,
-    Handling: -0.25,
-    Distribution: 0.1,
-    'Clean Sheet': 0.4,
-    'Goal Conceded': -0.2,
-    'Claim': 0.2,
-    'Long Kick': 0.1,
-  },
-  DF: {
-    Tackling: 0.25,
-    Awareness: 0.2,
-    'Aerial Ability': 0.15,
-    'Beaten 1v1': -0.15,
-    'Caught Out of Position': -0.2,
-    'Clean Sheet': 0.3,
-    'Interception': 0.2
-  },
-  MF: {
-    Vision: 0.3,
-    'Chance Created': 0.15,
-    Passing: 0.02,
-    'Ball Control': 0.15,
-    'Dispossessed': -0.12,
-    Defending: 0.15,
-    'Successful Dribble': 0.15
-  },
-  AT: {
-    Finishing: 0.35,
-    'Shot Power': 0.1,
-    'Big Chance Missed': -0.25,
-    'Shot Off Target': -0.05,
-    Dribbling: 0.15,
-    Positioning: 0.1,
-    'Attacking Run': 0.1,
-    'Goal Scored': 0.35
+body {
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top left, rgba(73, 166, 255, 0.15), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(110, 232, 255, 0.08), transparent 30%),
+    linear-gradient(140deg, #071019 0%, #0b1220 25%, #101b2e 100%);
+  color: var(--text);
+}
+
+button, input, select {
+  font: inherit;
+}
+
+.app-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 28px 18px 50px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(15, 22, 33, 0.96), rgba(25, 35, 55, 0.92));
+  box-shadow: 0 18px 45px var(--shadow);
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.crest {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: white;
+  border: 2px solid rgba(255,255,255,0.25);
+}
+
+.crest-barca {
+  background: linear-gradient(135deg, #0d49b5, #c71d26);
+}
+
+.brand-copy .brand-kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+}
+
+.brand-copy h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 2vw, 2.4rem);
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tab-button, .admin-toggle-btn, .unlock-btn, .save-btn, .apply-event-btn, .undo-btn, .sort-toggle, .export-btn, .import-btn {
+  border: 1px solid rgba(128, 175, 255, 0.32);
+  color: var(--text);
+  background: rgba(17, 28, 42, 0.9);
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tab-button:hover, .admin-toggle-btn:hover, .unlock-btn:hover, .save-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(87, 176, 255, 0.7);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, rgba(73,166,255,0.28), rgba(111,232,255,0.14));
+  border-color: rgba(111,232,255,0.7);
+  box-shadow: 0 0 0 1px rgba(111,232,255,0.15);
+}
+
+.main-area {
+  margin-top: 24px;
+}
+
+.tab-panel.hidden {
+  display: none;
+}
+
+.controls-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-box, .filter-select {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(16, 25, 38, 0.92);
+  color: var(--text);
+  flex: 1;
+  min-width: 150px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(14, 24, 37, 0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.summary-card span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.summary-card strong {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.summary-card.accent { border-color: rgba(111,232,255,0.35); }
+.summary-card.blue { border-color: rgba(73,166,255,0.35); }
+.summary-card.green { border-color: rgba(126,228,174,0.32); }
+.summary-card.orange { border-color: rgba(255,176,103,0.34); }
+
+.ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.position-panel {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(15,24,36,0.95), rgba(18,28,43,0.93));
+  overflow: hidden;
+  box-shadow: 0 18px 38px rgba(7, 14, 24, 0.35);
+}
+
+.position-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.position-header h3 {
+  font-size: 1.15rem;
+  text-transform: uppercase;
+}
+
+.position-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--bg);
+}
+
+.position-panel.GK .position-badge { background: linear-gradient(135deg, #8ec7ff, #64dbff); }
+.position-panel.DF .position-badge { background: linear-gradient(135deg, #7ee4ae, #54d4e0); }
+.position-panel.MF .position-badge { background: linear-gradient(135deg, #f0c96d, #ffc778); }
+.position-panel.AT .position-badge { background: linear-gradient(135deg, #ffb067, #ff8f6d); }
+
+.player-card-list {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(21, 32, 49, 0.82);
+  padding: 14px;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.player-card:hover {
+  border-color: rgba(110, 232, 255, 0.35);
+  box-shadow: 0 12px 20px rgba(8, 14, 24, 0.22);
+}
+
+.player-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.player-points {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #08131d;
+  background: linear-gradient(135deg, #a6edff, #77d4ff);
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 1.02rem;
+}
+
+.player-club {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.admin-panel {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 40;
+  width: min(440px, calc(100vw - 28px));
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(10, 17, 28, 0.96);
+  border: 1px solid rgba(111,232,255,0.28);
+  box-shadow: 0 24px 60px rgba(2, 10, 17, 0.42);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.admin-panel.hidden {
+  display: none;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.admin-login-box label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.admin-login-box input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(128,175,255,0.22);
+  background: rgba(16, 25, 38, 0.92);
+  color: var(--text);
+}
+
+.editor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.editor-row select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(128,175,255,0.22);
+  background: rgba(16, 25, 38, 0.92);
+  color: var(--text);
+}
+
+.admin-editor.hidden {
+  display: none;
+}
+
+.player-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.player-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.player-form input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(128,175,255,0.22);
+  background: rgba(16, 25, 38, 0.92);
+  color: var(--text);
+}
+
+.event-logger {
+  background: rgba(15, 24, 36, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.event-logger h2 {
+  margin-bottom: 18px;
+  font-size: 1.4rem;
+}
+
+.event-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.form-row select, .form-row input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(128,175,255,0.22);
+  background: rgba(16, 25, 38, 0.92);
+  color: var(--text);
+}
+
+.apply-event-btn, .undo-btn {
+  grid-column: span 1;
+  margin-top: auto;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  padding: 14px 18px;
+  background: rgba(15, 24, 36, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-info {
+  flex: 1;
+}
+
+.history-player {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.history-event {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.history-value {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  background: rgba(73, 166, 255, 0.2);
+}
+
+.export-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.export-preview {
+  padding: 18px;
+  background: rgba(15, 24, 36, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1120px) {
+  .ranking-grid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
   }
-};
-
-const defaultPlayers = [
-  { id: 'gk-1', name: 'Zishan', club: 'Barça', position: 'GK', stats: { Reflexes: 82, Positioning: 78, Handling: 79, Distribution: 74, 'Clean Sheet': 0, 'Goal Conceded': 0, Claim: 0, 'Long Kick': 0 } },
-  { id: 'df-1', name: 'Naresh', club: 'Barça', position: 'DF', stats: { Tackling: 71, Awareness: 76, 'Aerial Ability': 72, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
-  { id: 'df-2', name: 'Ibrahim', club: 'Barça', position: 'DF', stats: { Tackling: 69, Awareness: 74, 'Aerial Ability': 70, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
-  { id: 'mf-1', name: 'Ihsan', club: 'Barça', position: 'MF', stats: { Vision: 81, 'Chance Created': 76, Passing: 78, 'Ball Control': 80, 'Dispossessed': 0, Defending: 72, 'Successful Dribble': 0 } },
-  { id: 'mf-2', name: 'M.Akhsar', club: 'Barça', position: 'MF', stats: { Vision: 78, 'Chance Created': 74, Passing: 77, 'Ball Control': 76, 'Dispossessed': 0, Defending: 68, 'Successful Dribble': 0 } },
-  { id: 'mf-3', name: 'Rusndi', club: 'Barça', position: 'MF', stats: { Vision: 72, 'Chance Created': 79, Passing: 80, 'Ball Control': 73, 'Dispossessed': 0, Defending: 71, 'Successful Dribble': 0 } },
-  { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', stats: { Vision: 77, 'Chance Created': 80, Passing: 76, 'Ball Control': 74, 'Dispossessed': 0, Defending: 75, 'Successful Dribble': 0 } },
-  { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', stats: { Finishing: 79, 'Shot Power': 76, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 75, Positioning: 72, 'Attacking Run': 0, 'Goal Scored': 0 } },
-  { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', stats: { Finishing: 70, 'Shot Power': 73, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 78, Positioning: 70, 'Attacking Run': 0, 'Goal Scored': 0 } },
-
-  { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', stats: { Reflexes: 80, Positioning: 76, Handling: 78, Distribution: 72, 'Clean Sheet': 0, 'Goal Conceded': 0, Claim: 0, 'Long Kick': 0 } },
-  { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', stats: { Tackling: 72, Awareness: 75, 'Aerial Ability': 71, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
-  { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', stats: { Tackling: 66, Awareness: 70, 'Aerial Ability': 68, 'Beaten 1v1': 0, 'Caught Out of Position': 0, 'Clean Sheet': 0, 'Interception': 0 } },
-  { id: 'mf-5', name: 'Khush', club: 'Madrid', position: 'MF', stats: { Vision: 73, 'Chance Created': 75, Passing: 78, 'Ball Control': 79, 'Dispossessed': 0, Defending: 71, 'Successful Dribble': 0 } },
-  { id: 'mf-6', name: 'Ishan', club: 'Madrid', position: 'MF', stats: { Vision: 75, 'Chance Created': 74, Passing: 73, 'Ball Control': 72, 'Dispossessed': 0, Defending: 70, 'Successful Dribble': 0 } },
-  { id: 'mf-7', name: 'Mishal', club: 'Madrid', position: 'MF', stats: { Vision: 74, 'Chance Created': 76, Passing: 75, 'Ball Control': 77, 'Dispossessed': 0, Defending: 72, 'Successful Dribble': 0 } },
-  { id: 'mf-8', name: 'Zayan', club: 'Madrid', position: 'MF', stats: { Vision: 76, 'Chance Created': 71, Passing: 74, 'Ball Control': 75, 'Dispossessed': 0, Defending: 73, 'Successful Dribble': 0 } },
-  { id: 'at-3', name: 'Sayed', club: 'Madrid', position: 'AT', stats: { Finishing: 72, 'Shot Power': 74, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 76, Positioning: 71, 'Attacking Run': 0, 'Goal Scored': 0 } },
-  { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', stats: { Finishing: 75, 'Shot Power': 73, 'Big Chance Missed': 0, 'Shot Off Target': 0, Dribbling: 74, Positioning: 70, 'Attacking Run': 0, 'Goal Scored': 0 } }
-];
-
-const allStats = [
-  'Reflexes', 'Positioning', 'Handling', 'Distribution', 'Tackling', 'Awareness', 'Aerial Ability',
-  'Vision', 'Passing', 'Ball Control', 'Defending', 'Finishing', 'Shot Power', 'Dribbling', 'Physical', 'Pace',
-  'Claim', 'Long Kick', 'Interception', 'Chance Created', 'Successful Dribble', 'Goal Scored', 'Attacking Run',
-  'Big Chance Missed', 'Shot Off Target', 'Dispossessed', 'Clean Sheet', 'Goal Conceded', 'Beaten 1v1', 'Caught Out of Position'
-];
-
-let currentAdminEmail = localStorage.getItem(STORAGE_KEYS.adminEmail) || DEFAULT_ADMIN_EMAIL;
-let selectedPlayerId = null;
-
-function getPlayers() {
-  const raw = localStorage.getItem(STORAGE_KEYS.players);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(defaultPlayers));
-    return [...defaultPlayers];
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [...defaultPlayers];
-    }
-    return parsed;
-  } catch (error) {
-    return [...defaultPlayers];
+  .event-form {
+    grid-template-columns: 1fr;
   }
 }
 
-function savePlayers(players) {
-  localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(players));
-}
-
-function normalizeStatValue(rawValue) {
-  const value = Number(rawValue);
-  if (Number.isNaN(value)) return 0;
-  return value;
-}
-
-function calculatePlayerPoints(player) {
-  const rules = positionRules[player.position] || {};
-  let total = 0;
-
-  Object.entries(rules).forEach(([statKey, weight]) => {
-    const statValue = Number(player.stats?.[statKey] ?? 0);
-    total += statValue * weight;
-  });
-
-  total += (Number(player.stats?.Physical ?? 0) * 0.03);
-  total += (Number(player.stats?.Pace ?? 0) * 0.02);
-
-  return Number(total.toFixed(2));
-}
-
-function getSortedPlayersByPosition(position) {
-  return [...getPlayers()]
-    .filter(player => player.position === position)
-    .sort((a, b) => calculatePlayerPoints(b) - calculatePlayerPoints(a));
-}
-
-function renderSummary() {
-  const players = getPlayers();
-  document.getElementById('summaryGK').textContent = players.filter(p => p.position === 'GK').length;
-  document.getElementById('summaryDF').textContent = players.filter(p => p.position === 'DF').length;
-  document.getElementById('summaryMF').textContent = players.filter(p => p.position === 'MF').length;
-  document.getElementById('summaryAT').textContent = players.filter(p => p.position === 'AT').length;
-}
-
-function renderRankingGrid() {
-  const grid = document.getElementById('rankingGrid');
-  const positions = ['GK', 'DF', 'MF', 'AT'];
-
-  grid.innerHTML = positions.map(position => {
-    const players = getSortedPlayersByPosition(position);
-
-    const cards = players.map(player => {
-      const points = calculatePlayerPoints(player);
-      const statPills = Object.entries(player.stats || {})
-        .slice(0, 4)
-        .map(([stat, value]) => `<span class="stat-pill">${stat}<strong>${value}</strong></span>`)
-        .join('');
-
-      return `
-        <article class="player-card">
-          <div class="player-card-top">
-            <span class="player-tag">${player.position}</span>
-            <span class="player-points">${points} pts</span>
-          </div>
-          <div class="player-row">
-            <span class="player-name">${player.name}</span>
-            <span class="player-club">${player.club}</span>
-          </div>
-          <div class="stat-strip">${statPills}</div>
-        </article>
-      `;
-    }).join('');
-
-    return `
-      <section class="position-panel ${position}">
-        <div class="position-header">
-          <h3>${position === 'GK' ? 'Goalkeepers' : position === 'DF' ? 'Defenders' : position === 'MF' ? 'Midfielders' : 'Attackers'}</h3>
-          <span class="position-badge">${position}</span>
-        </div>
-        <div class="player-card-list">${cards || '<div class="player-card"><p>No players in this position yet.</p></div>'}</div>
-      </section>
-    `;
-  }).join('');
-}
-
-function renderSquadGrid() {
-  const target = document.getElementById('squadGrid');
-  const players = getPlayers();
-
-  target.innerHTML = players.map(player => {
-    const statEntries = Object.entries(player.stats || {}).slice(0, 8);
-    const statList = statEntries.map(([key, value]) => `<div><span>${key}</span><strong>${value}</strong></div>`).join('');
-
-    return `
-      <article class="squad-card">
-        <div class="squad-card-head">
-          <h4>${player.name}</h4>
-          <span class="pos-tag">${player.position}</span>
-        </div>
-        <div class="meta">
-          <span>${player.club}</span>
-          <strong>${calculatePlayerPoints(player)} pts</strong>
-        </div>
-        <div class="stat-grid">${statList}</div>
-      </article>
-    `;
-  }).join('');
-}
-
-function renderAdminPanel() {
-  const emailInput = document.getElementById('adminEmailInput');
-  emailInput.value = currentAdminEmail;
-
-  const editor = document.getElementById('adminEditor');
-  const playerSelect = document.getElementById('playerSelect');
-  const players = getPlayers();
-
-  if (!selectedPlayerId && players.length) {
-    selectedPlayerId = players[0].id;
+@media (max-width: 760px) {
+  .topbar {
+    flex-direction: column;
   }
-
-  playerSelect.innerHTML = players.map(player => `<option value="${player.id}">${player.name} • ${player.position}</option>`).join('');
-
-  if (players.some(player => player.id === selectedPlayerId)) {
-    playerSelect.value = selectedPlayerId;
-  } else {
-    selectedPlayerId = players[0].id;
-    playerSelect.value = selectedPlayerId;
+  .header-actions {
+    width: 100%;
   }
-
-  const form = document.getElementById('playerForm');
-  const selectedPlayer = players.find(player => player.id === selectedPlayerId) || players[0];
-
-  const formFields = [
-    { key: 'name', label: 'Name', type: 'text' },
-    { key: 'position', label: 'Position', type: 'select', options: ['GK', 'DF', 'MF', 'AT'] },
-    { key: 'club', label: 'Club', type: 'text' }
-  ];
-
-  const statsField = allStats.map(stat => `
-    <label>
-      <span>${stat}</span>
-      <input name="${stat}" type="number" step="0.1" value="${Number(selectedPlayer.stats?.[stat] ?? 0)}" />
-    </label>
-  `).join('');
-
-  form.innerHTML = `
-    ${formFields.map(field => {
-      if (field.type === 'select') {
-        return `
-          <label class="full-width">
-            <span>${field.label}</span>
-            <select name="${field.key}">
-              ${field.options.map(option => `<option value="${option}" ${selectedPlayer[field.key] === option ? 'selected' : ''}>${option}</option>`).join('')}
-            </select>
-          </label>
-        `;
-      }
-
-      return `
-        <label class="${field.key === 'club' ? 'full-width' : ''}">
-          <span>${field.label}</span>
-          <input name="${field.key}" type="text" value="${selectedPlayer[field.key] ?? ''}" />
-        </label>
-      `;
-    }).join('')}
-    ${statsField}
-  `;
-
-  if (editor.classList.contains('hidden')) {
-    editor.classList.remove('hidden');
+  .ranking-grid, .summary-strip {
+    grid-template-columns: 1fr;
   }
 }
-
-function setTab(tabName) {
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.classList.toggle('active', button.dataset.tab === tabName);
-  });
-
-  document.getElementById('rankingsTab').classList.toggle('hidden', tabName !== 'rankings');
-  document.getElementById('squadTab').classList.toggle('hidden', tabName !== 'squad');
-}
-
-function checkAdminAccess() {
-  const emailInput = document.getElementById('adminEmailInput');
-  const editor = document.getElementById('adminEditor');
-  const adminValue = emailInput.value.trim().toLowerCase();
-  const savedAdmin = currentAdminEmail.trim().toLowerCase();
-
-  if (adminValue === savedAdmin || adminValue === DEFAULT_ADMIN_EMAIL.toLowerCase()) {
-    currentAdminEmail = adminValue || savedAdmin;
-    localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
-    editor.classList.remove('hidden');
-    return true;
-  }
-
-  editor.classList.add('hidden');
-  return false;
-}
-
-function savePlayerData() {
-  const form = document.getElementById('playerForm');
-  const players = getPlayers();
-  const playerIndex = players.findIndex(player => player.id === selectedPlayerId);
-
-  if (playerIndex === -1) return;
-
-  const formData = new FormData(form);
-  const nextName = String(formData.get('name') || '').trim();
-  const nextClub = String(formData.get('club') || '').trim();
-  const nextPosition = String(formData.get('position') || 'GK');
-
-  const updatedStats = {};
-  allStats.forEach(stat => {
-    updatedStats[stat] = normalizeStatValue(formData.get(stat));
-  });
-
-  players[playerIndex] = {
-    ...players[playerIndex],
-    name: nextName || players[playerIndex].name,
-    club: nextClub || players[playerIndex].club,
-    position: nextPosition,
-    stats: updatedStats
-  };
-
-  savePlayers(players);
-  renderSummary();
-  renderRankingGrid();
-  renderSquadGrid();
-  renderAdminPanel();
-}
-
-function attachEvents() {
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-      setTab(button.dataset.tab);
-    });
-  });
-
-  document.getElementById('adminToggleBtn').addEventListener('click', () => {
-    const panel = document.getElementById('adminPanel');
-    panel.classList.toggle('hidden');
-    if (!panel.classList.contains('hidden')) {
-      document.getElementById('adminEmailInput').focus();
-    }
-  });
-
-  document.getElementById('closeAdminPanelBtn').addEventListener('click', () => {
-    document.getElementById('adminPanel').classList.add('hidden');
-  });
-
-  document.getElementById('unlockAdminBtn').addEventListener('click', () => {
-    const unlocked = checkAdminAccess();
-    if (unlocked) {
-      renderAdminPanel();
-      document.getElementById('playerSelect').focus();
-    }
-  });
-
-  document.getElementById('playerSelect').addEventListener('change', (event) => {
-    selectedPlayerId = event.target.value;
-    renderAdminPanel();
-  });
-
-  document.getElementById('savePlayerBtn').addEventListener('click', savePlayerData);
-}
-
-function init() {
-  const players = getPlayers();
-  if (players.length) {
-    selectedPlayerId = players[0].id;
-  }
-
-  localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
-  renderSummary();
-  renderRankingGrid();
-  renderSquadGrid();
-  attachEvents();
-  document.getElementById('adminPanel').classList.add('hidden');
-}
-
-init();
-
-window.addEventListener('storage', () => {
-  renderSummary();
-  renderRankingGrid();
-  renderSquadGrid();
-});
