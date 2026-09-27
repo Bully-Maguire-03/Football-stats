@@ -1,7 +1,8 @@
 const STORAGE_KEYS = {
-  players: 'pitchrank_players_v3',
-  history: 'pitchrank_history_v3',
-  adminEmail: 'pitchrank_admin_email_v3'
+  players: 'pitchrank_players_v4',
+  history: 'pitchrank_history_v4',
+  adminEmail: 'pitchrank_admin_email_v4',
+  claimedPlayerId: 'pitchrank_claimed_player_id_v4'
 };
 
 const DEFAULT_ADMIN_EMAIL = 'yourname@gmail.com';
@@ -69,7 +70,6 @@ const defaultPlayers = [
   { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', totalPoints: 0, stats: { Vision: 77, Passing: 76, 'Ball Control': 74, Defending: 75, Physical: 76, Pace: 70 } },
   { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', totalPoints: 0, stats: { Finishing: 79, 'Shot Power': 76, Dribbling: 75, Positioning: 72, Physical: 71, Pace: 82 } },
   { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', totalPoints: 0, stats: { Finishing: 70, 'Shot Power': 73, Dribbling: 78, Positioning: 70, Physical: 68, Pace: 80 } },
-
   { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', totalPoints: 0, stats: { Reflexes: 80, Positioning: 76, Handling: 78, Distribution: 72, Physical: 70, Pace: 69 } },
   { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', totalPoints: 0, stats: { Tackling: 72, Awareness: 75, 'Aerial Ability': 71, Physical: 73, Pace: 74 } },
   { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', totalPoints: 0, stats: { Tackling: 66, Awareness: 70, 'Aerial Ability': 68, Physical: 67, Pace: 71 } },
@@ -118,17 +118,15 @@ function saveHistory(history) {
 function calculatePlayerPoints(player) {
   const stats = player.stats || {};
   let total = 0;
-
   const allRules = [...(eventRules[player.position] || []), ...(eventRules.Universal || [])];
   allRules.forEach(rule => {
     const value = Number(stats[rule.stat] || 0);
     total += value * rule.delta;
   });
-
   return Number(total.toFixed(2));
 }
 
-function makePlayerPointsCurrent() {
+function syncPlayerTotals() {
   const players = getPlayers();
   players.forEach(player => {
     player.totalPoints = calculatePlayerPoints(player);
@@ -161,71 +159,59 @@ function renderRankings() {
   });
 
   const positions = ['GK', 'DF', 'MF', 'AT'];
-
-  grid.innerHTML = positions
-    .filter(pos => !filter || pos === filter)
-    .map(pos => {
-      const positionPlayers = filtered
-        .filter(p => p.position === pos)
-        .sort((a, b) => b.totalPoints - a.totalPoints);
-
-      const cards = positionPlayers.map((player, index) => {
-        const statMap = Object.entries(player.stats || {}).slice(0, 4);
-        const statPills = statMap.map(([key, value]) => `<span class="stat-pill">${key}<strong>${value}</strong></span>`).join('');
-        const teamClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
-
-        return `
-          <article class="player-card">
-            <div class="player-card-top">
-              <span>#${index + 1}</span>
-              <span class="player-points">${player.totalPoints.toFixed(2)} pts</span>
-            </div>
-            <div class="player-row">
-              <span class="player-name">${player.name}</span>
-              <span class="team-badge ${teamClass}">${player.club}</span>
-            </div>
-            <div class="stat-strip">${statPills}</div>
-          </article>
-        `;
-      }).join('');
-
+  grid.innerHTML = positions.filter(pos => !filter || pos === filter).map(pos => {
+    const positionPlayers = filtered.filter(p => p.position === pos).sort((a, b) => b.totalPoints - a.totalPoints);
+    const cards = positionPlayers.map((player, index) => {
+      const statMap = Object.entries(player.stats || {}).slice(0, 4);
+      const statPills = statMap.map(([key, value]) => `<span class="stat-pill">${key}<strong>${value}</strong></span>`).join('');
+      const teamClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
       return `
-        <section class="position-panel ${pos}">
-          <div class="position-header">
-            <h3>${pos === 'GK' ? 'Goalkeepers' : pos === 'DF' ? 'Defenders' : pos === 'MF' ? 'Midfielders' : 'Attackers'}</h3>
-            <span class="position-badge">${pos}</span>
+        <article class="player-card">
+          <div class="player-card-top">
+            <span>#${index + 1}</span>
+            <span class="player-points">${player.totalPoints.toFixed(2)} pts</span>
           </div>
-          <div class="player-card-list">
-            ${cards || '<div style="padding:12px;color:var(--muted);">No players found.</div>'}
+          <div class="player-row">
+            <span class="player-name">${player.name}</span>
+            <span class="team-badge ${teamClass}">${player.club}</span>
           </div>
-        </section>
+          <div class="stat-strip">${statPills}</div>
+        </article>
       `;
     }).join('');
+
+    return `
+      <section class="position-panel ${pos}">
+        <div class="position-header">
+          <h3>${pos === 'GK' ? 'Goalkeepers' : pos === 'DF' ? 'Defenders' : pos === 'MF' ? 'Midfielders' : 'Attackers'}</h3>
+          <span class="position-badge">${pos}</span>
+        </div>
+        <div class="player-card-list">
+          ${cards || '<div style="padding:12px;color:var(--muted);">No players found.</div>'}
+        </div>
+      </section>
+    `;
+  }).join('');
 }
 
 function renderEventSelects() {
   const players = getPlayers();
   const eventPlayer = document.getElementById('eventPlayerSelect');
   const eventType = document.getElementById('eventTypeSelect');
-
   eventPlayer.innerHTML = players.map(player => `<option value="${player.id}">${player.name} (${player.position})</option>`).join('');
   updateEventChoices();
   eventType.value = eventType.options[0]?.value || '';
 }
 
 function updateEventChoices() {
-  const playerId = document.getElementById('eventPlayerSelect').value;
-  const player = getPlayers().find(item => item.id === playerId);
+  const player = getPlayers().find(item => item.id === document.getElementById('eventPlayerSelect').value);
   const eventType = document.getElementById('eventTypeSelect');
-
-  const options = getEventChoices(player?.position || 'GK');
-  eventType.innerHTML = options.map(label => `<option value="${label}">${label}</option>`).join('');
+  eventType.innerHTML = getEventChoices(player?.position || 'GK').map(label => `<option value="${label}">${label}</option>`).join('');
 }
 
 function renderHistory() {
   const history = getHistory();
   const list = document.getElementById('historyList');
-
   if (!history.length) {
     list.innerHTML = '<div class="history-item"><div class="history-info">No match events logged yet.</div></div>';
     return;
@@ -261,7 +247,6 @@ function applyEvent() {
 
   const delta = Number((rule.delta * quantity).toFixed(2));
   player.totalPoints = Number((player.totalPoints + delta).toFixed(2));
-
   const currentStat = Number(player.stats[rule.stat] || 0);
   player.stats[rule.stat] = Number((currentStat + rule.delta * quantity).toFixed(2));
 
@@ -280,6 +265,7 @@ function applyEvent() {
   renderSummary();
   renderRankings();
   renderHistory();
+  renderPlayerDashboard();
   document.getElementById('eventQuantity').value = '1';
 }
 
@@ -300,8 +286,7 @@ function undoLastEvent() {
 
   if (matchingRule) {
     player.totalPoints = Number((player.totalPoints - last.pointsDelta).toFixed(2));
-    const currentStat = Number(player.stats[matchingRule.stat] || 0);
-    player.stats[matchingRule.stat] = Number((currentStat - matchingRule.delta * last.quantity).toFixed(2));
+    player.stats[matchingRule.stat] = Number(((player.stats[matchingRule.stat] || 0) - matchingRule.delta * last.quantity).toFixed(2));
   }
 
   saveHistory(history);
@@ -309,6 +294,7 @@ function undoLastEvent() {
   renderSummary();
   renderRankings();
   renderHistory();
+  renderPlayerDashboard();
 }
 
 function renderAdminEditor() {
@@ -354,9 +340,7 @@ function savePlayerEdits() {
   const player = players.find(item => item.id === selectedId);
   if (!player) return;
 
-  const form = document.getElementById('playerForm');
-  const formData = new FormData(form);
-
+  const formData = new FormData(document.getElementById('playerForm'));
   player.name = formData.get('name') || player.name;
   player.club = formData.get('club') || player.club;
   player.position = formData.get('position') || player.position;
@@ -373,6 +357,7 @@ function savePlayerEdits() {
   savePlayers(players);
   renderSummary();
   renderRankings();
+  renderPlayerDashboard();
 }
 
 function unlockAdmin() {
@@ -395,9 +380,11 @@ function setTab(tabName) {
   document.getElementById('eventsTab').classList.toggle('hidden', tabName !== 'events');
   document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'history');
   document.getElementById('exportTab').classList.toggle('hidden', tabName !== 'export');
+  document.getElementById('playerviewTab').classList.toggle('hidden', tabName !== 'playerview');
 
   if (tabName === 'events') renderEventSelects();
   if (tabName === 'history') renderHistory();
+  if (tabName === 'playerview') renderPlayerDashboard();
 }
 
 function exportJson() {
@@ -416,7 +403,6 @@ function exportCsv() {
   players.forEach(player => {
     csv += `${player.name},${player.club},${player.position},${player.totalPoints}\n`;
   });
-
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -429,9 +415,100 @@ function importData() {
   document.getElementById('importFile').click();
 }
 
+function getClaimedPlayer() {
+  const id = localStorage.getItem(STORAGE_KEYS.claimedPlayerId);
+  return getPlayers().find(player => player.id === id) || null;
+}
+
+function claimPlayerProfile() {
+  const value = document.getElementById('claimPlayerInput').value.trim();
+  if (!value) {
+    alert('Enter your player name first.');
+    return;
+  }
+
+  const player = getPlayers().find(item => item.name.toLowerCase() === value.toLowerCase());
+  if (!player) {
+    alert('That player name was not found. Ask the admin to confirm your spelling.');
+    return;
+  }
+
+  localStorage.setItem(STORAGE_KEYS.claimedPlayerId, player.id);
+  renderPlayerProfileCard();
+  renderPlayerDashboard();
+}
+
+function renderPlayerProfileCard() {
+  const claimSection = document.getElementById('playerClaimSection');
+  const card = document.getElementById('playerProfileCard');
+  const claimed = getClaimedPlayer();
+
+  if (!claimed) {
+    claimSection.classList.remove('hidden');
+    card.classList.add('hidden');
+    return;
+  }
+
+  claimSection.classList.add('hidden');
+  card.classList.remove('hidden');
+  card.innerHTML = `
+    <div class="player-card-mini">
+      <div>
+        <h3>${claimed.name}</h3>
+        <div class="muted">${claimed.position} • ${claimed.club}</div>
+      </div>
+      <div class="player-points">${claimed.totalPoints.toFixed(2)} pts</div>
+    </div>
+    <div class="player-mini-stats">
+      ${Object.entries(claimed.stats || {}).slice(0, 8).map(([key, value]) => `<span class="stat-pill">${key}<strong>${value}</strong></span>`).join('')}
+    </div>
+  `;
+}
+
+function renderPlayerDashboard() {
+  const claimed = getClaimedPlayer();
+  const dashboard = document.getElementById('playerDashboard');
+
+  if (!claimed) {
+    dashboard.innerHTML = '<div class="dashboard-card"><h3>No player claimed</h3><p>Use the profile claim field above to access your own stats.</p></div>';
+    return;
+  }
+
+  const stats = Object.entries(claimed.stats || {});
+  const columns = [
+    stats.slice(0, Math.ceil(stats.length / 2)),
+    stats.slice(Math.ceil(stats.length / 2))
+  ];
+
+  const groups = columns.map((items, index) => `
+    <div class="dashboard-card">
+      <h3>${index === 0 ? 'Main Stats' : 'Secondary Stats'}</h3>
+      <div class="stat-strip">
+        ${items.map(([key, value]) => `<span class="stat-pill">${key}<strong>${value}</strong></span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  dashboard.innerHTML = `
+    <div class="dashboard-card">
+      <h3>Profile</h3>
+      <p><strong>Name:</strong> ${claimed.name}</p>
+      <p><strong>Club:</strong> ${claimed.club}</p>
+      <p><strong>Position:</strong> ${claimed.position}</p>
+      <p><strong>Total Points:</strong> ${claimed.totalPoints.toFixed(2)}</p>
+    </div>
+    ${groups}
+  `;
+}
+
 function initEvents() {
   document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => setTab(button.dataset.tab));
+  });
+
+  document.getElementById('claimPlayerBtn').addEventListener('click', claimPlayerProfile);
+  document.getElementById('claimPlayerInput').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') claimPlayerProfile();
   });
 
   document.getElementById('searchInput').addEventListener('input', renderRankings);
@@ -458,10 +535,12 @@ function initEvents() {
         const data = JSON.parse(reader.result);
         if (data.players) localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(data.players));
         if (data.history) localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(data.history));
-        makePlayerPointsCurrent();
+        syncPlayerTotals();
         renderSummary();
         renderRankings();
         renderHistory();
+        renderPlayerDashboard();
+        renderPlayerProfileCard();
         alert('Data imported successfully.');
       } catch {
         alert('Invalid JSON file.');
@@ -472,13 +551,22 @@ function initEvents() {
 }
 
 function init() {
-  makePlayerPointsCurrent();
+  syncPlayerTotals();
   renderSummary();
   renderRankings();
   renderEventSelects();
   renderHistory();
+  renderPlayerProfileCard();
+  renderPlayerDashboard();
   initEvents();
   document.getElementById('adminPanel').classList.add('hidden');
+
+  setInterval(() => {
+    if (getClaimedPlayer()) {
+      renderPlayerProfileCard();
+      renderPlayerDashboard();
+    }
+  }, 3000);
 }
 
 init();

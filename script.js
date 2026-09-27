@@ -98,7 +98,8 @@ button, input, select {
 .apply-event-btn,
 .undo-btn,
 .export-btn,
-.import-btn {
+.import-btn,
+.claim-btn {
   border: 1px solid rgba(128, 175, 255, 0.32);
   color: var(--text);
   background: rgba(17, 28, 42, 0.9);
@@ -115,7 +116,8 @@ button, input, select {
 .apply-event-btn:hover,
 .undo-btn:hover,
 .export-btn:hover,
-.import-btn:hover {
+.import-btn:hover,
+.claim-btn:hover {
   transform: translateY(-1px);
   border-color: rgba(87, 176, 255, 0.7);
 }
@@ -127,6 +129,63 @@ button, input, select {
 
 .main-area { margin-top: 24px; }
 .tab-panel.hidden { display: none; }
+
+.player-access-box {
+  margin: 20px 0 24px;
+}
+
+.player-access-header {
+  margin-bottom: 12px;
+}
+
+.player-claim-section label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.claim-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.claim-row input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(128,175,255,0.22);
+  background: rgba(16,25,38,0.9);
+  color: var(--text);
+}
+
+.player-profile-card {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(17,25,38,0.9);
+}
+
+.hidden { display: none !important; }
+
+.player-card-mini {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.player-mini-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
 
 .controls-bar {
   display: flex;
@@ -421,6 +480,23 @@ button, input, select {
   overflow: auto;
 }
 
+.player-dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dashboard-card {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(18, 29, 42, 0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dashboard-card h3 {
+  margin-bottom: 8px;
+}
+
 .admin-panel {
   position: fixed;
   top: 22px;
@@ -500,10 +576,12 @@ button, input, select {
 @media (max-width: 1120px) {
   .ranking-grid { grid-template-columns: repeat(2, minmax(260px, 1fr)); }
   .event-form { grid-template-columns: 1fr; }
+  .player-dashboard { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 760px) {
   .topbar { flex-direction: column; align-items: flex-start; }
   .header-actions { width: 100%; justify-content: flex-start; }
   .summary-strip, .ranking-grid { grid-template-columns: 1fr; }
+  .claim-row { flex-direction: column; align-items: stretch; }
 }

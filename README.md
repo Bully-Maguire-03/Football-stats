@@ -25,9 +25,26 @@
         <button class="tab-button" data-tab="events">Match Events</button>
         <button class="tab-button" data-tab="history">History</button>
         <button class="tab-button" data-tab="export">Export</button>
+        <button class="tab-button" data-tab="playerview">Player View</button>
         <button id="adminBtn" class="admin-toggle-btn">Admin</button>
       </nav>
     </header>
+
+    <section class="player-access-box panel-card">
+      <div class="player-access-header">
+        <h2>Player Access</h2>
+      </div>
+
+      <div id="playerClaimSection" class="player-claim-section">
+        <label for="claimPlayerInput">Claim your profile</label>
+        <div class="claim-row">
+          <input id="claimPlayerInput" type="text" placeholder="Enter your player name" />
+          <button id="claimPlayerBtn" class="claim-btn">Claim</button>
+        </div>
+      </div>
+
+      <div id="playerProfileCard" class="player-profile-card hidden"></div>
+    </section>
 
     <aside id="adminPanel" class="admin-panel hidden">
       <div class="admin-header">
@@ -125,6 +142,13 @@
             <input id="importFile" type="file" accept=".json" style="display:none" />
           </div>
           <div id="exportPreview" class="export-preview"></div>
+        </div>
+      </section>
+
+      <section id="playerviewTab" class="tab-panel hidden">
+        <div class="panel-card">
+          <h2>🧑‍💼 Player Dashboard</h2>
+          <div id="playerDashboard" class="player-dashboard"></div>
         </div>
       </section>
     </main>
