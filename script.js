@@ -1,5 +1,12 @@
-const STORAGE_KEY = 'pitchrank_merged_data_v2';
-const ADMIN_EMAIL = 'yourname@gmail.com';
+const STORAGE_KEY = 'pitchrank_pro_app_v1';
+const ADMIN_EMAIL = 'mohammedakhsar2020@gmail.com';
+
+const positionLabels = {
+  GK: 'Goalkeepers',
+  DF: 'Defenders',
+  MF: 'Midfielders',
+  AT: 'Attackers'
+};
 
 const pointRules = {
   GK: [
@@ -55,73 +62,66 @@ const defaultPlayers = [
   { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', claimedBy: null, email: '', stats: { Finishing: 75, 'Shot Power': 73, Dribbling: 74, Positioning: 70, Physical: 72, Pace: 79 } }
 ];
 
-const sessionDefaults = {
-  activeUser: null,
-  suggestions: []
+const adminUser = {
+  name: 'Mohammed Akhsar',
+  email: ADMIN_EMAIL,
+  playerName: 'Mohammed Akhsar',
+  provider: 'Google',
+  isAdmin: true
 };
 
-const positionLabels = { GK: 'Goalkeepers', DF: 'Defenders', MF: 'Midfielders', AT: 'Attackers' };
+const seedState = {
+  players: defaultPlayers,
+  history: [],
+  suggestions: [],
+  activeUser: adminUser
+};
 
 const els = {
-  rankingGrid: document.getElementById('rankingGrid'),
-  summary: document.getElementById('leaderboardSummary'),
+  userBadge: document.getElementById('userBadge'),
   searchInput: document.getElementById('searchInput'),
   positionFilter: document.getElementById('positionFilter'),
   sortFilter: document.getElementById('sortFilter'),
+  summaryTiles: document.getElementById('summaryTiles'),
+  overallLeaderboard: document.getElementById('overallLeaderboard'),
+  positionBoards: document.getElementById('positionBoards'),
   eventPlayerSelect: document.getElementById('eventPlayerSelect'),
   eventTypeSelect: document.getElementById('eventTypeSelect'),
   eventQuantity: document.getElementById('eventQuantity'),
   historyList: document.getElementById('historyList'),
-  loginStatusBox: document.getElementById('loginStatusBox'),
-  playerClaimCard: document.getElementById('playerClaimCard'),
+  profileCard: document.getElementById('profileCard'),
   playerStatsGrid: document.getElementById('playerStatsGrid'),
+  profileStatus: document.getElementById('profileStatus'),
   suggestionForm: document.getElementById('suggestionForm'),
-  suggestionText: document.getElementById('suggestionText'),
-  suggestionList: document.getElementById('suggestionList'),
+  suggestionInput: document.getElementById('suggestionInput'),
+  sentSuggestions: document.getElementById('sentSuggestions'),
   publicSuggestions: document.getElementById('publicSuggestions'),
   authModal: document.getElementById('authModal'),
-  authName: document.getElementById('authName'),
-  authEmail: document.getElementById('authEmail'),
-  authPlayer: document.getElementById('authPlayer'),
+  authNameInput: document.getElementById('authNameInput'),
+  authEmailInput: document.getElementById('authEmailInput'),
+  authPlayerInput: document.getElementById('authPlayerInput'),
   adminPanel: document.getElementById('adminPanel'),
   adminEmailInput: document.getElementById('adminEmailInput'),
+  adminEditor: document.getElementById('adminEditor'),
   adminPlayerSelect: document.getElementById('adminPlayerSelect'),
   adminPlayerForm: document.getElementById('adminPlayerForm'),
-  claimedList: document.getElementById('claimedList'),
-  adminEditor: document.getElementById('adminEditor'),
-  adminTabBtn: document.getElementById('adminTabBtn')
+  claimedPlayersList: document.getElementById('claimedPlayersList'),
+  playerModal: document.getElementById('playerModal'),
+  playerModalTitle: document.getElementById('playerModalTitle'),
+  playerModalContent: document.getElementById('playerModalContent')
 };
 
-function getStorageData() {
+function getState() {
   const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  const base = {
-    players: defaultPlayers,
-    history: [],
-    suggestions: [],
-    activeUser: null
-  };
-
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-    return base;
+  const state = stored || seedState;
+  if (!state.activeUser) {
+    state.activeUser = adminUser;
   }
-
-  return {
-    ...base,
-    ...stored,
-    players: Array.isArray(stored.players) && stored.players.length ? stored.players : defaultPlayers,
-    history: Array.isArray(stored.history) ? stored.history : [],
-    suggestions: Array.isArray(stored.suggestions) ? stored.suggestions : [],
-    activeUser: stored.activeUser || null
-  };
+  return state;
 }
 
-function saveStorageData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function getData() {
-  return getStorageData();
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function getRulesForPosition(position) {
@@ -131,58 +131,62 @@ function getRulesForPosition(position) {
 function calculatePlayerPoints(player) {
   const rules = getRulesForPosition(player.position);
   return Number(rules.reduce((total, rule) => {
-    const stat = rule[1];
-    const value = Number(player.stats?.[stat] || 0);
-    return total + value * rule[2];
+    const [label, stat, factor] = rule;
+    const statValue = Number(player.stats[stat] || 0);
+    return total + statValue * factor;
   }, 0).toFixed(2));
 }
 
 function syncPlayerPoints() {
-  const data = getData();
-  data.players = data.players.map((player) => ({
+  const state = getState();
+  state.players = state.players.map((player) => ({
     ...player,
     totalPoints: calculatePlayerPoints(player)
   }));
-  saveStorageData(data);
-  return data;
+  saveState(state);
+  return state;
 }
 
 function getCurrentUser() {
-  const data = getData();
-  return data.activeUser;
+  return getState().activeUser;
 }
 
-function setCurrentUser(user) {
-  const data = getData();
-  data.activeUser = user;
-  saveStorageData(data);
+function isAdminUser(user) {
+  return Boolean(user && user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 }
 
-function getClaimedPlayer() {
-  const data = getData();
-  return data.players.find((player) => player.claimedBy && player.claimedBy === getCurrentUser()?.email);
+function applyAdminLogin() {
+  const state = getState();
+  state.activeUser = { ...adminUser };
+  saveState(state);
+  renderUserBadge();
 }
 
-function pickBackground() {
-  const backgrounds = [
-    'linear-gradient(135deg, rgba(8, 15, 28, 0.8), rgba(18, 34, 52, 0.8)), url("https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1600&q=80") center/cover',
-    'linear-gradient(135deg, rgba(7, 17, 28, 0.7), rgba(28, 42, 58, 0.8)), url("https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?auto=format&fit=crop&w=1600&q=80") center/cover',
-    'linear-gradient(135deg, rgba(8, 16, 28, 0.75), rgba(18, 32, 52, 0.85)), url("https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1600&q=80") center/cover',
-    'linear-gradient(135deg, rgba(12, 18, 30, 0.72), rgba(26, 38, 56, 0.82)), url("https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1600&q=80") center/cover'
-  ];
+function renderUserBadge() {
+  const user = getCurrentUser();
+  if (!user) {
+    els.userBadge.innerHTML = '<span class="mini-avatar">⚽</span><span class="name">Guest</span>';
+    return;
+  }
 
-  const bg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-  document.body.style.background = bg;
+  const adminText = isAdminUser(user) ? 'Admin' : 'User';
+  els.userBadge.innerHTML = `
+    <span class="mini-avatar">${user.name.charAt(0).toUpperCase()}</span>
+    <div>
+      <div class="name">${user.name}</div>
+      <small>${adminText}</small>
+    </div>
+  `;
 }
 
 function renderSummary() {
-  const data = getData();
+  const state = getState();
   const counts = { GK: 0, DF: 0, MF: 0, AT: 0 };
-  data.players.forEach((player) => {
+  state.players.forEach((player) => {
     counts[player.position] += 1;
   });
 
-  els.summary.innerHTML = ['GK', 'DF', 'MF', 'AT'].map((pos) => `
+  els.summaryTiles.innerHTML = ['GK', 'DF', 'MF', 'AT'].map((pos) => `
     <div class="summary-tile">
       <span>${positionLabels[pos]}</span>
       <strong>${counts[pos]}</strong>
@@ -190,56 +194,93 @@ function renderSummary() {
   `).join('');
 }
 
-function getFilteredPlayers() {
-  const search = (els.searchInput?.value || '').trim().toLowerCase();
-  const filter = els.positionFilter?.value || '';
-  const sortMode = els.sortFilter?.value || 'points';
+function renderOverallLeaderboard() {
+  const state = getState();
+  const sorted = [...state.players].sort((a, b) => calculatePlayerPoints(b) - calculatePlayerPoints(a));
 
-  const data = getData();
-  let players = data.players.filter((player) => {
-    const matchesText = !search || player.name.toLowerCase().includes(search);
-    const matchesPos = !filter || player.position === filter;
-    return matchesText && matchesPos;
+  els.overallLeaderboard.innerHTML = `
+    <div class="overall-title">
+      <h3>Overall leaderboard</h3>
+      <span class="chip">Top performers</span>
+    </div>
+    <table class="overall-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Player</th>
+          <th>Club</th>
+          <th>Position</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.slice(0, 10).map((player, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td><button class="link-btn" data-player-id="${player.id}">${player.name}</button></td>
+            <td>${player.club}</td>
+            <td>${player.position}</td>
+            <td>${calculatePlayerPoints(player).toFixed(2)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  document.querySelectorAll('.link-btn').forEach((button) => {
+    button.addEventListener('click', () => openPlayerModal(button.dataset.playerId));
+  });
+}
+
+function getFilteredPlayers() {
+  const query = (els.searchInput.value || '').trim().toLowerCase();
+  const posFilter = els.positionFilter.value;
+  const sortMode = els.sortFilter.value;
+  const state = getState();
+
+  let players = state.players.filter((player) => {
+    const matchesQuery = !query || player.name.toLowerCase().includes(query);
+    const matchesPos = !posFilter || player.position === posFilter;
+    return matchesQuery && matchesPos;
   });
 
   players.sort((a, b) => {
     if (sortMode === 'name') return a.name.localeCompare(b.name);
     if (sortMode === 'club') return a.club.localeCompare(b.club);
-    return (b.totalPoints || calculatePlayerPoints(b)) - (a.totalPoints || calculatePlayerPoints(a));
+    return calculatePlayerPoints(b) - calculatePlayerPoints(a);
   });
 
   return players;
 }
 
-function renderRankings() {
+function renderPositionBoards() {
   const players = getFilteredPlayers();
-  const positions = ['GK', 'DF', 'MF', 'AT'];
   const filter = els.positionFilter.value;
+  const positions = ['GK', 'DF', 'MF', 'AT'];
 
-  els.rankingGrid.innerHTML = positions.filter((pos) => !filter || pos === filter).map((pos) => {
-    const list = players.filter((player) => player.position === pos);
-
-    const cards = list.map((player, index) => {
-      const teamClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
+  els.positionBoards.innerHTML = positions.filter((pos) => !filter || pos === filter).map((pos) => {
+    const posPlayers = players.filter((player) => player.position === pos);
+    const cards = posPlayers.map((player, index) => {
+      const clubClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
       const points = calculatePlayerPoints(player);
-      const topList = Object.entries(player.stats || {}).slice(0, 4).map(([key, value]) => `
+      const pills = Object.entries(player.stats || {}).slice(0, 4).map(([key, value]) => `
         <span class="stat-pill">${key}<strong>${value}</strong></span>
       `).join('');
 
       return `
-        <article class="player-row-card ${index < 10 ? 'elite' : ''}">
+        <article class="player-card ${index < 10 ? 'top-ten' : ''}" data-player-id="${player.id}">
           <div class="player-head">
             <span class="player-rank">#${index + 1}</span>
             <span class="player-points">${points.toFixed(2)} pts</span>
           </div>
           <div class="player-main">
             <span class="player-name">${player.name}</span>
-            <span class="club-badge ${teamClass}">${player.club}</span>
+            <span class="club-badge ${clubClass}">${player.club}</span>
           </div>
-          <div class="stat-stack">${topList}</div>
+          <div class="stat-stack">${pills}</div>
         </article>
       `;
-    }).join('') || '<div class="player-row-card"><p class="muted">No players found.</p></div>';
+    }).join('') || '<div class="player-card"><p class="muted">No players found.</p></div>';
 
     return `
       <div class="position-column ${pos}">
@@ -251,247 +292,206 @@ function renderRankings() {
       </div>
     `;
   }).join('');
-}
 
-function updateEventChoices() {
-  const data = getData();
-  const player = data.players.find((entry) => entry.id === els.eventPlayerSelect.value) || data.players[0];
-  const rules = getRulesForPosition(player.position);
-  els.eventTypeSelect.innerHTML = rules.map(([label]) => `<option value="${label}">${label}</option>`).join('');
+  document.querySelectorAll('.player-card').forEach((card) => {
+    card.addEventListener('click', () => openPlayerModal(card.dataset.playerId));
+  });
 }
 
 function populateEventPlayerSelect() {
-  const data = getData();
-  els.eventPlayerSelect.innerHTML = data.players.map((player) => `
+  const state = getState();
+  els.eventPlayerSelect.innerHTML = state.players.map((player) => `
     <option value="${player.id}">${player.name} (${player.position})</option>
   `).join('');
   updateEventChoices();
 }
 
+function updateEventChoices() {
+  const state = getState();
+  const selectedId = els.eventPlayerSelect.value;
+  const player = state.players.find((entry) => entry.id === selectedId) || state.players[0];
+  const rules = getRulesForPosition(player.position);
+  els.eventTypeSelect.innerHTML = rules.map(([label]) => `<option value="${label}">${label}</option>`).join('');
+}
+
 function renderHistory() {
-  const data = getData();
-  if (!data.history.length) {
-    els.historyList.innerHTML = '<div class="history-item"><div class="history-meta"><div class="history-name">No events yet</div><div class="history-detail">Log the first match event from the Events tab.</div></div></div>';
+  const state = getState();
+  if (!state.history.length) {
+    els.historyList.innerHTML = '<div class="history-item"><div class="history-meta"><div class="history-name">No match events logged yet.</div><div class="history-detail">Use the event logger to record updates.</div></div></div>';
     return;
   }
 
-  els.historyList.innerHTML = [...data.history].reverse().map((entry) => {
+  els.historyList.innerHTML = [...state.history].reverse().map((entry) => {
     const delta = Number(entry.delta || 0);
-    const tone = delta >= 0 ? 'background: rgba(134,239,179,0.12); color: var(--green);' : 'background: rgba(255,123,115,0.12); color: var(--red);';
+    const tone = delta >= 0 ? 'background: rgba(138,232,176,0.12); color: var(--green);' : 'background: rgba(255,125,115,0.12); color: var(--red);';
     return `
       <div class="history-item">
         <div class="history-meta">
           <div class="history-name">${entry.playerName}</div>
           <div class="history-detail">${entry.eventLabel} × ${entry.quantity} • ${entry.timestamp}</div>
         </div>
-        <div class="history-delta" style="${tone}">${delta >= 0 ? '+' : ''}${delta.toFixed(2)}</div>
+        <div class="history-delta" style="${tone}">${delta > 0 ? '+' : ''}${delta.toFixed(2)}</div>
       </div>
     `;
   }).join('');
 }
 
 function applyEvent() {
-  const data = getData();
-  const player = data.players.find((entry) => entry.id === els.eventPlayerSelect.value);
-  if (!player) return;
-
+  const state = getState();
+  const playerId = els.eventPlayerSelect.value;
+  const player = state.players.find((entry) => entry.id === playerId);
   const eventLabel = els.eventTypeSelect.value;
   const quantity = Math.max(1, Number(els.eventQuantity.value || 1));
+
+  if (!player) return;
   const rule = getRulesForPosition(player.position).find(([label]) => label === eventLabel);
   if (!rule) return;
 
   const delta = Number((rule[2] * quantity).toFixed(2));
-  player.stats[rule[1]] = Number(((player.stats[rule[1]] || 0) + rule[2] * quantity).toFixed(2));
+  const statKey = rule[1];
+  player.stats[statKey] = Number(((player.stats[statKey] || 0) + rule[2] * quantity).toFixed(2));
 
-  data.history.push({
-    timestamp: new Date().toLocaleString(),
+  state.history.push({
     playerName: player.name,
     eventLabel,
     quantity,
-    delta
+    delta,
+    timestamp: new Date().toLocaleString()
   });
 
-  saveStorageData(data);
+  saveState(state);
   renderRankings();
   renderHistory();
-  renderPlayerDashboard();
+  renderProfile();
   renderAdminEditor();
 }
 
-function renderAuthState() {
+function renderProfile() {
   const user = getCurrentUser();
+  const state = getState();
 
   if (!user) {
-    els.loginStatusBox.innerHTML = `
-      <p>You are not signed in yet.</p>
-      <button id="loginFromProfile" class="primary-btn small-btn">Sign in</button>
-    `;
-    document.getElementById('loginFromProfile').onclick = openAuthModal;
-    els.playerClaimCard.classList.add('hidden');
+    els.profileStatus.textContent = 'Signed out';
+    els.profileStatus.className = 'status-pill neutral';
+    els.profileCard.innerHTML = '<p>Sign in to view your linked player profile and suggestions.</p>';
+    els.playerStatsGrid.innerHTML = '<div class="stat-box"><span>No player linked</span></div>';
     return;
   }
 
-  const player = getData().players.find((entry) => entry.name.toLowerCase() === user.playerName.toLowerCase()) || null;
+  const linkedPlayer = state.players.find((player) => {
+    return player.claimedBy && player.claimedBy.toLowerCase() === user.email.toLowerCase();
+  }) || state.players.find((player) => player.name.toLowerCase() === (user.playerName || '').toLowerCase()) || null;
 
-  els.loginStatusBox.innerHTML = `
-    <p>Signed in as <strong>${user.name}</strong> (${user.email})</p>
-    <button id="logoutBtn" class="primary-btn small-btn">Log out</button>
-  `;
-  document.getElementById('logoutBtn').onclick = () => {
-    setCurrentUser(null);
-    renderAuthState();
-    renderPlayerDashboard();
-  };
-
-  if (!player) {
-    els.playerClaimCard.classList.remove('hidden');
-    els.playerClaimCard.innerHTML = `
-      <div class="claim-header">
+  if (!linkedPlayer) {
+    els.profileStatus.textContent = isAdminUser(user) ? 'Admin access' : 'Signed in';
+    els.profileStatus.className = isAdminUser(user) ? 'status-pill green' : 'status-pill neutral';
+    els.profileCard.innerHTML = `
+      <div class="topline">
         <strong>${user.name}</strong>
-        <span class="player-tag">Unlinked</span>
+        <span class="status-pill neutral">${user.provider || 'User'}</span>
       </div>
-      <p>You are signed in, but no player was linked. Use the admin or choose a matching player name.</p>
+      <div class="meta">${user.email}</div>
+      <p>You are signed in, but no linked player profile is assigned yet.</p>
     `;
+    els.playerStatsGrid.innerHTML = '<div class="stat-box"><span>No stats available</span></div>';
     return;
   }
 
-  player.claimedBy = user.email;
-  saveStorageData(getData());
-  els.playerClaimCard.classList.remove('hidden');
-  els.playerClaimCard.innerHTML = `
-    <div class="claim-header">
-      <strong>${player.name}</strong>
-      <span class="player-tag">Claimed</span>
+  linkedPlayer.claimedBy = user.email;
+  state.activeUser = { ...user, playerName: linkedPlayer.name };
+  saveState(state);
+
+  els.profileStatus.textContent = isAdminUser(user) ? 'Admin access' : 'Player linked';
+  els.profileStatus.className = isAdminUser(user) ? 'status-pill green' : 'status-pill neutral';
+
+  const points = calculatePlayerPoints(linkedPlayer);
+  els.profileCard.innerHTML = `
+    <div class="topline">
+      <strong>${linkedPlayer.name}</strong>
+      <span class="status-pill green">${linkedPlayer.position}</span>
     </div>
-    <p>${player.club} • ${player.position}</p>
-    <p>Total points: <strong>${calculatePlayerPoints(player).toFixed(2)}</strong></p>
+    <div class="meta">${linkedPlayer.club} • ${user.email}</div>
+    <p>Total points: <strong>${points.toFixed(2)}</strong></p>
   `;
-}
 
-function renderPlayerDashboard() {
-  const user = getCurrentUser();
-  const data = getData();
-  const player = data.players.find((entry) => {
-    if (!user) return false;
-    return entry.claimedBy === user.email || entry.name.toLowerCase() === user.playerName?.toLowerCase();
-  });
-
-  if (!player) {
-    els.playerStatsGrid.innerHTML = '<div class="stat-box"><span>No linked player</span></div>';
-    return;
-  }
-
-  const stats = Object.entries(player.stats || {});
-  els.playerStatsGrid.innerHTML = stats.map(([key, value]) => `
-    <div class="stat-box"><span>${key}</span><strong>${value}</strong></div>
+  const stats = Object.entries(linkedPlayer.stats || {}).map(([key, value]) => `
+    <div class="stat-box">
+      <span>${key}</span>
+      <strong>${value}</strong>
+    </div>
   `).join('');
+  els.playerStatsGrid.innerHTML = stats;
 }
 
 function renderSuggestions() {
-  const data = getData();
+  const state = getState();
   const user = getCurrentUser();
 
   if (!user) {
-    els.suggestionList.innerHTML = '<div class="suggestion-item"><strong>Sign in to send suggestions</strong></div>';
+    els.sentSuggestions.innerHTML = '<div class="sent-item"><div class="message"><strong>Please sign in first.</strong></div></div>';
   } else {
-    els.suggestionList.innerHTML = data.suggestions.filter((item) => item.user === user.email).map((item) => `
-      <div class="suggestion-item">
-        <strong>${item.title}</strong>
-        <div>${item.message}</div>
-        <small>${new Date(item.createdAt).toLocaleString()}</small>
+    const mySuggestions = state.suggestions.filter((item) => item.userEmail.toLowerCase() === user.email.toLowerCase());
+    els.sentSuggestions.innerHTML = mySuggestions.length ? mySuggestions.map((item) => `
+      <div class="sent-item">
+        <div class="message">
+          <strong>${item.title}</strong>
+          <div>${item.message}</div>
+          <small>${new Date(item.createdAt).toLocaleString()}</small>
+        </div>
       </div>
-    `).join('') || '<div class="suggestion-item"><strong>No suggestions sent yet.</strong></div>';
+    `).join('') : '<div class="sent-item"><div class="message"><strong>No suggestions sent yet.</strong></div></div>';
   }
 
-  els.publicSuggestions.innerHTML = data.suggestions.length ? data.suggestions.slice().reverse().map((item) => `
+  els.publicSuggestions.innerHTML = state.suggestions.length ? state.suggestions.slice().reverse().map((item) => `
     <div class="public-suggestion">
-      <strong>${item.title}</strong>
-      <div>${item.message}</div>
-      <small>${item.user} • ${new Date(item.createdAt).toLocaleString()}</small>
+      <div class="message">
+        <strong>${item.title}</strong>
+        <div>${item.message}</div>
+        <small>${item.userEmail} • ${new Date(item.createdAt).toLocaleString()}</small>
+      </div>
     </div>
-  `).join('') : '<div class="public-suggestion"><strong>No suggestions yet.</strong></div>';
+  `).join('') : '<div class="public-suggestion"><div class="message"><strong>No suggestions yet.</strong></div></div>';
 }
 
 function handleSuggestionSubmit(event) {
   event.preventDefault();
   const user = getCurrentUser();
+  const text = els.suggestionInput.value.trim();
+
   if (!user) {
-    alert('Sign in before sending a suggestion.');
+    alert('Sign in to send a suggestion.');
     return;
   }
 
-  const text = els.suggestionText.value.trim();
   if (!text) {
-    alert('Write a suggestion or report first.');
+    alert('Write your suggestion first.');
     return;
   }
 
-  const data = getData();
-  data.suggestions.push({
-    title: 'Player feedback',
+  const state = getState();
+  state.suggestions.push({
+    title: 'Player / app feedback',
     message: text,
-    user: user.email,
+    userEmail: user.email,
     createdAt: new Date().toISOString()
   });
-
-  saveStorageData(data);
-  els.suggestionText.value = '';
+  saveState(state);
+  els.suggestionInput.value = '';
   renderSuggestions();
 }
 
-function openAuthModal() {
-  els.authModal.classList.remove('hidden');
-}
-
-function closeAuthModal() {
-  els.authModal.classList.add('hidden');
-}
-
-function handleAuthSubmit() {
-  const name = els.authName.value.trim();
-  const email = els.authEmail.value.trim();
-  const playerName = els.authPlayer.value.trim();
-
-  if (!name || !email) {
-    alert('Please enter both your name and email.');
-    return;
-  }
-
-  const payload = {
-    name,
-    email,
-    playerName: playerName || name,
-    signedInAt: new Date().toISOString()
-  };
-
-  setCurrentUser(payload);
-  const data = getData();
-  const match = data.players.find((player) => player.name.toLowerCase() === payload.playerName.toLowerCase());
-  if (match) {
-    match.claimedBy = payload.email;
-  }
-  saveStorageData(data);
-  closeAuthModal();
-  renderAuthState();
-  renderPlayerDashboard();
-  renderAdminEditor();
-  renderRankings();
-}
-
 function renderAdminEditor() {
-  const data = getData();
-  const adminUnlocked = els.adminEditor && !els.adminEditor.classList.contains('hidden');
+  const state = getState();
+  const user = getCurrentUser();
+  if (!isAdminUser(user) || !els.adminEditor || els.adminEditor.classList.contains('hidden')) return;
 
-  if (!adminUnlocked) return;
-
-  els.adminPlayerSelect.innerHTML = data.players.map((player) => `
+  els.adminPlayerSelect.innerHTML = state.players.map((player) => `
     <option value="${player.id}">${player.name} (${player.position})</option>
   `).join('');
 
-  const selected = data.players[0];
-  const player = data.players.find((entry) => entry.id === els.adminPlayerSelect.value) || selected;
+  const selectedPlayer = state.players.find((player) => player.id === els.adminPlayerSelect.value) || state.players[0];
 
-  const statFields = Object.entries(player.stats || {}).map(([key, value]) => `
+  const statsFields = Object.entries(selectedPlayer.stats || {}).map(([key, value]) => `
     <label>
       <span>${key}</span>
       <input name="${key}" value="${value}" />
@@ -501,22 +501,22 @@ function renderAdminEditor() {
   els.adminPlayerForm.innerHTML = `
     <label class="wide-field">
       <span>Name</span>
-      <input name="name" value="${player.name}" />
+      <input name="name" value="${selectedPlayer.name}" />
     </label>
     <label>
       <span>Club</span>
-      <input name="club" value="${player.club}" />
+      <input name="club" value="${selectedPlayer.club}" />
     </label>
     <label>
       <span>Position</span>
       <select name="position">
-        ${['GK','DF','MF','AT'].map((pos) => `<option value="${pos}" ${player.position === pos ? 'selected' : ''}>${pos}</option>`).join('')}
+        ${['GK', 'DF', 'MF', 'AT'].map((pos) => `<option value="${pos}" ${selectedPlayer.position === pos ? 'selected' : ''}>${pos}</option>`).join('')}
       </select>
     </label>
-    ${statFields}
+    ${statsFields}
   `;
 
-  els.claimedList.innerHTML = data.players.filter((p) => p.claimedBy).map((player) => `
+  els.claimedPlayersList.innerHTML = state.players.filter((player) => player.claimedBy).map((player) => `
     <div class="claimed-item">
       <div>
         <strong>${player.name}</strong>
@@ -528,103 +528,191 @@ function renderAdminEditor() {
 }
 
 function saveAdminPlayer() {
-  const data = getData();
-  const selectedId = els.adminPlayerSelect.value;
-  const player = data.players.find((entry) => entry.id === selectedId);
+  const state = getState();
+  const playerId = els.adminPlayerSelect.value;
+  const player = state.players.find((entry) => entry.id === playerId);
   if (!player) return;
 
-  const form = els.adminPlayerForm.querySelectorAll('input, select');
-  const values = {};
-  form.forEach((field) => {
-    values[field.name] = field.value;
+  const fieldMap = {};
+  els.adminPlayerForm.querySelectorAll('input, select').forEach((field) => {
+    fieldMap[field.name] = field.value;
   });
 
-  player.name = values.name || player.name;
-  player.club = values.club || player.club;
-  player.position = values.position || player.position;
+  player.name = fieldMap.name || player.name;
+  player.club = fieldMap.club || player.club;
+  player.position = fieldMap.position || player.position;
 
   const nextStats = {};
-  Object.entries(player.stats || {}).forEach(([key]) => {
-    nextStats[key] = Number(values[key]) || 0;
+  Object.keys(player.stats || {}).forEach((key) => {
+    nextStats[key] = Number(fieldMap[key]) || 0;
   });
-
   player.stats = nextStats;
-  saveStorageData(data);
+
+  saveState(state);
   syncPlayerPoints();
-  renderRankings();
   renderSummary();
-  renderPlayerDashboard();
+  renderOverallLeaderboard();
+  renderPositionBoards();
+  renderProfile();
   renderAdminEditor();
 }
 
-function unlockAdmin() {
-  const entered = (els.adminEmailInput.value || '').trim().toLowerCase();
-  if (entered === ADMIN_EMAIL.toLowerCase()) {
-    els.adminEditor.classList.remove('hidden');
-    renderAdminEditor();
+function openPlayerModal(playerId) {
+  const state = getState();
+  const player = state.players.find((entry) => entry.id === playerId);
+  if (!player) return;
+
+  const statBoxes = Object.entries(player.stats || {}).map(([key, value]) => `
+    <div class="detail-box">
+      <span>${key}</span>
+      <strong>${value}</strong>
+    </div>
+  `).join('');
+
+  els.playerModalTitle.textContent = `${player.name} • ${player.position}`;
+  els.playerModalContent.innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-box"><span>Club</span><strong>${player.club}</strong></div>
+      <div class="detail-box"><span>Points</span><strong>${calculatePlayerPoints(player).toFixed(2)}</strong></div>
+      <div class="detail-box"><span>Claimed by</span><strong>${player.claimedBy || 'Unclaimed'}</strong></div>
+      <div class="detail-box"><span>Position</span><strong>${player.position}</strong></div>
+    </div>
+    <div class="detail-grid">${statBoxes}</div>
+  `;
+
+  els.playerModal.classList.remove('hidden');
+}
+
+function closePlayerModal() {
+  els.playerModal.classList.add('hidden');
+}
+
+function openAuthModal() {
+  els.authModal.classList.remove('hidden');
+}
+
+function closeAuthModal() {
+  els.authModal.classList.add('hidden');
+}
+
+function signInWithGoogle() {
+  const state = getState();
+  const autoUser = { name: 'Mohammed Akhsar', email: ADMIN_EMAIL, playerName: 'Mohammed Akhsar', provider: 'Google', isAdmin: true };
+  state.activeUser = autoUser;
+  saveState(state);
+  renderUserBadge();
+  renderProfile();
+  renderSuggestions();
+  closeAuthModal();
+}
+
+function handleAuthSubmit() {
+  const name = (els.authNameInput.value || '').trim();
+  const email = (els.authEmailInput.value || '').trim();
+  const playerName = (els.authPlayerInput.value || '').trim();
+
+  if (!name || !email) {
+    alert('Please enter a name and email.');
     return;
   }
 
-  alert('Access denied. Use your admin email.');
-}
+  const state = getState();
+  state.activeUser = {
+    name,
+    email,
+    playerName: playerName || name,
+    provider: 'Email',
+    isAdmin: email.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+  };
 
-function setupEvents() {
-  document.querySelectorAll('.nav-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      const target = button.dataset.tab;
-      document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
-      if (target === 'rankings') document.getElementById('rankingsPanel').classList.remove('hidden');
-      if (target === 'events') document.getElementById('eventsPanel').classList.remove('hidden');
-      if (target === 'profile') document.getElementById('profilePanel').classList.remove('hidden');
-      if (target === 'suggestions') document.getElementById('suggestionsPanel').classList.remove('hidden');
-      document.querySelectorAll('.nav-btn').forEach((item) => item.classList.toggle('active', item === button));
-    });
-  });
+  const linkedPlayer = state.players.find((player) => player.name.toLowerCase() === playerName.toLowerCase() || player.name.toLowerCase() === name.toLowerCase());
+  if (linkedPlayer) {
+    linkedPlayer.claimedBy = email;
+  }
 
-  document.getElementById('adminTabBtn').addEventListener('click', () => {
-    els.adminPanel.classList.remove('hidden');
-  });
-
-  document.getElementById('closeAdminPanel').addEventListener('click', () => {
-    els.adminPanel.classList.add('hidden');
-  });
-
-  document.getElementById('lockAdminBtn')?.addEventListener('click', () => {
-    els.adminPanel.classList.add('hidden');
-  });
-
-  document.getElementById('loginBtn').addEventListener('click', openAuthModal);
-  document.getElementById('loginFromProfile').addEventListener('click', openAuthModal);
-  document.getElementById('closeAuthModal').addEventListener('click', closeAuthModal);
-  document.getElementById('submitAuth').addEventListener('click', handleAuthSubmit);
-
-  document.getElementById('unlockAdminBtn').addEventListener('click', unlockAdmin);
-  document.getElementById('saveAdminPlayer').addEventListener('click', saveAdminPlayer);
-  els.adminPlayerSelect.addEventListener('change', renderAdminEditor);
-
-  els.searchInput.addEventListener('input', renderRankings);
-  els.positionFilter.addEventListener('change', renderRankings);
-  els.sortFilter.addEventListener('change', renderRankings);
-
-  els.eventPlayerSelect.addEventListener('change', updateEventChoices);
-  document.getElementById('applyEventBtn').addEventListener('click', applyEvent);
-
-  els.suggestionForm.addEventListener('submit', handleSuggestionSubmit);
-}
-
-function initialize() {
-  pickBackground();
-  syncPlayerPoints();
-  renderSummary();
-  renderRankings();
-  populateEventPlayerSelect();
-  renderHistory();
-  renderAuthState();
-  renderPlayerDashboard();
+  saveState(state);
+  closeAuthModal();
+  renderUserBadge();
+  renderProfile();
   renderSuggestions();
-  setupEvents();
   renderAdminEditor();
 }
 
+function toggleAdminPanel() {
+  els.adminPanel.classList.toggle('hidden');
+  if (!els.adminPanel.classList.contains('hidden')) {
+    renderAdminEditor();
+  }
+}
+
+function unlockAdmin() {
+  const adminEmail = (els.adminEmailInput.value || '').trim().toLowerCase();
+  if (adminEmail !== ADMIN_EMAIL.toLowerCase()) {
+    alert('Access denied. Use the admin email associated with this app.');
+    return;
+  }
+
+  els.adminEditor.classList.remove('hidden');
+  renderAdminEditor();
+}
+
+function bindEvents() {
+  document.querySelectorAll('.nav-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.panel;
+      document.querySelectorAll('.panel-section').forEach((panel) => panel.classList.add('hidden'));
+      document.getElementById(`${target}Panel`).classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn === button));
+    });
+  });
+
+  document.getElementById('adminToggleBtn').addEventListener('click', toggleAdminPanel);
+  document.getElementById('closeAdminPanelBtn').addEventListener('click', () => els.adminPanel.classList.add('hidden'));
+  document.getElementById('closeAuthModal').addEventListener('click', closeAuthModal);
+  document.getElementById('submitAuthBtn').addEventListener('click', handleAuthSubmit);
+  document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
+  document.getElementById('unlockAdminBtn').addEventListener('click', unlockAdmin);
+  document.getElementById('saveAdminPlayerBtn').addEventListener('click', saveAdminPlayer);
+  document.getElementById('closePlayerModal').addEventListener('click', closePlayerModal);
+  document.getElementById('applyEventBtn').addEventListener('click', applyEvent);
+  els.suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+  els.searchInput.addEventListener('input', renderPositionBoards);
+  els.positionFilter.addEventListener('change', renderPositionBoards);
+  els.sortFilter.addEventListener('change', renderPositionBoards);
+  els.eventPlayerSelect.addEventListener('change', updateEventChoices);
+  els.adminPlayerSelect.addEventListener('change', renderAdminEditor);
+
+  document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('modal')) {
+      closeAuthModal();
+      closePlayerModal();
+    }
+  });
+}
+
+function renderRankings() {
+  renderSummary();
+  renderOverallLeaderboard();
+  renderPositionBoards();
+}
+
+function initialize() {
+  const state = getState();
+  if (!state.activeUser) {
+    state.activeUser = adminUser;
+    saveState(state);
+  }
+
+  syncPlayerPoints();
+  renderUserBadge();
+  renderRankings();
+  populateEventPlayerSelect();
+  renderHistory();
+  renderProfile();
+  renderSuggestions();
+  bindEvents();
+  renderAdminEditor();
+  document.getElementById('adminEmailInput').value = ADMIN_EMAIL;
+}
+
 initialize();
-console.log('PitchRank app initialized');

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PitchRank | Football Rankings</title>
+    <title>PitchRank | Football Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -16,26 +16,26 @@
           <div class="brand-mark">⚽</div>
           <div class="brand-copy">
             <span class="eyebrow">PitchRank</span>
-            <h1>Football Player Rankings</h1>
+            <h1>Football Analytics</h1>
           </div>
         </div>
 
-        <nav class="nav-bar" aria-label="Main navigation">
-          <button class="nav-btn active" data-tab="rankings">Rankings</button>
-          <button class="nav-btn" data-tab="events">Events</button>
-          <button class="nav-btn" data-tab="profile">Profile</button>
-          <button class="nav-btn" data-tab="suggestions">Suggestions</button>
-          <button class="nav-btn" id="adminTabBtn">Admin</button>
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-btn active" data-panel="rankings">Rankings</button>
+          <button class="nav-btn" data-panel="players">Players</button>
+          <button class="nav-btn" data-panel="events">Events</button>
+          <button class="nav-btn" data-panel="suggestions">Suggestions</button>
+          <button class="nav-btn" id="adminToggleBtn">Admin</button>
         </nav>
 
-        <div class="user-area">
-          <button id="loginBtn" class="login-btn">Sign in</button>
+        <div class="user-panel">
+          <div id="userBadge" class="user-badge"></div>
         </div>
       </header>
 
-      <main class="main-area">
-        <section id="rankingsPanel" class="tab-panel active">
-          <div class="toolbar">
+      <main class="main-content">
+        <section id="rankingsPanel" class="panel-section active">
+          <div class="toolbar card-surface">
             <input id="searchInput" type="text" placeholder="Search player..." />
             <select id="positionFilter">
               <option value="">All positions</option>
@@ -51,15 +51,46 @@
             </select>
           </div>
 
-          <div class="leaderboard-summary" id="leaderboardSummary"></div>
-          <div id="rankingGrid" class="ranking-grid"></div>
+          <div id="summaryTiles" class="summary-tiles"></div>
+          <div id="overallLeaderboard" class="overall-board card-surface"></div>
+          <div id="positionBoards" class="position-grid"></div>
         </section>
 
-        <section id="eventsPanel" class="tab-panel hidden">
-          <div class="panel-card wide-panel">
-            <div class="section-header">
+        <section id="playersPanel" class="panel-section hidden">
+          <div class="card-surface profile-shell">
+            <div class="profile-header">
+              <div>
+                <div class="eyebrow muted">Player view</div>
+                <h2>My profile</h2>
+              </div>
+              <span id="profileStatus" class="status-pill neutral">Signed out</span>
+            </div>
+
+            <div id="profileCard" class="profile-card"></div>
+
+            <div class="profile-grid">
+              <div class="mini-panel">
+                <h3>Player stats</h3>
+                <div id="playerStatsGrid" class="stats-grid"></div>
+              </div>
+
+              <div class="mini-panel">
+                <h3>Suggestion / request</h3>
+                <form id="suggestionForm" class="suggestion-form">
+                  <textarea id="suggestionInput" placeholder="Explain a stat issue, bug, or requested app feature..."></textarea>
+                  <button type="submit" class="primary-btn">Send suggestion</button>
+                </form>
+                <div id="sentSuggestions" class="suggestions-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="eventsPanel" class="panel-section hidden">
+          <div class="card-surface wide-panel">
+            <div class="section-title-row">
               <h2>Match Event Logger</h2>
-              <span class="chip">Coaching tool</span>
+              <span class="chip">Coach control</span>
             </div>
 
             <div class="event-form">
@@ -76,7 +107,7 @@
                 <input id="eventQuantity" type="number" min="1" value="1" />
               </div>
               <div class="field-wrap action-wrap">
-                <label class="ghost-label">Apply</label>
+                <label class="ghost">Apply</label>
                 <button id="applyEventBtn" class="primary-btn">Apply Event</button>
               </div>
             </div>
@@ -85,45 +116,11 @@
           </div>
         </section>
 
-        <section id="profilePanel" class="tab-panel hidden">
-          <div class="panel-card profile-layout">
-            <div class="profile-intro">
-              <div class="section-header compact-header">
-                <h2>Player dashboard</h2>
-                <span class="chip accent">Logged in</span>
-              </div>
-
-              <div id="loginStatusBox" class="login-status-box">
-                <p>You are not signed in yet.</p>
-                <button id="loginFromProfile" class="primary-btn small-btn">Sign in</button>
-              </div>
-
-              <div id="playerClaimCard" class="player-card claim-card hidden"></div>
-            </div>
-
-            <div class="profile-content">
-              <div class="mini-panel">
-                <h3>My stats</h3>
-                <div id="playerStatsGrid" class="stats-grid"></div>
-              </div>
-
-              <div class="mini-panel">
-                <h3>Suggestion / feedback</h3>
-                <form id="suggestionForm" class="suggestion-form">
-                  <textarea id="suggestionText" placeholder="Tell us about a wrong stat, a bug, or a feature you want added..."></textarea>
-                  <button type="submit" class="primary-btn">Send suggestion</button>
-                </form>
-                <div id="suggestionList" class="suggestion-list"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="suggestionsPanel" class="tab-panel hidden">
-          <div class="panel-card wide-panel">
-            <div class="section-header">
-              <h2>Community suggestions</h2>
-              <span class="chip">Inbox</span>
+        <section id="suggestionsPanel" class="panel-section hidden">
+          <div class="card-surface wide-panel">
+            <div class="section-title-row">
+              <h2>Suggestions inbox</h2>
+              <span class="chip accent">Community</span>
             </div>
             <div id="publicSuggestions" class="public-suggestions"></div>
           </div>
@@ -138,39 +135,42 @@
           <button id="closeAuthModal" class="close-btn" aria-label="Close sign in">×</button>
         </div>
 
-        <div class="auth-form">
+        <div class="auth-box">
+          <button id="googleSignInBtn" class="google-btn">Continue with Google</button>
+          <div class="divider"><span>or use email</span></div>
+
           <label>
             <span>Full name</span>
-            <input id="authName" type="text" placeholder="Enter your name" />
+            <input id="authNameInput" type="text" placeholder="Your name" />
           </label>
 
           <label>
             <span>Email</span>
-            <input id="authEmail" type="email" placeholder="you@example.com" />
+            <input id="authEmailInput" type="email" placeholder="you@example.com" />
           </label>
 
           <label>
             <span>Linked player</span>
-            <input id="authPlayer" type="text" placeholder="Player name (optional)" />
+            <input id="authPlayerInput" type="text" placeholder="Optional player name" />
           </label>
 
-          <button id="submitAuth" class="primary-btn wide-btn">Continue</button>
+          <button id="submitAuthBtn" class="primary-btn wide-btn">Continue</button>
         </div>
       </div>
     </aside>
 
     <aside id="adminPanel" class="admin-panel hidden">
       <div class="admin-header">
-        <h3>Admin panel</h3>
-        <button id="closeAdminPanel" class="close-btn" aria-label="Close admin panel">×</button>
+        <h3>Admin Controls</h3>
+        <button id="closeAdminPanelBtn" class="close-btn" aria-label="Close admin panel">×</button>
       </div>
 
-      <div class="admin-auth">
+      <div class="admin-auth-box">
         <label>
           <span>Admin email</span>
-          <input id="adminEmailInput" type="email" placeholder="yourname@gmail.com" />
+          <input id="adminEmailInput" type="email" placeholder="mohammedakhsar2020@gmail.com" />
         </label>
-        <button id="unlockAdminBtn" class="primary-btn">Unlock editing</button>
+        <button id="unlockAdminBtn" class="primary-btn">Unlock admin</button>
       </div>
 
       <div id="adminEditor" class="admin-editor hidden">
@@ -180,14 +180,24 @@
         </div>
 
         <div id="adminPlayerForm" class="admin-player-form"></div>
-        <button id="saveAdminPlayer" class="primary-btn wide-btn">Save player</button>
+        <button id="saveAdminPlayerBtn" class="primary-btn w-full">Save player</button>
 
-        <div class="claimed-list-wrap">
+        <div class="claimed-section">
           <h4>Claimed accounts</h4>
-          <div id="claimedList" class="claimed-list"></div>
+          <div id="claimedPlayersList" class="claimed-list"></div>
         </div>
       </div>
     </aside>
+
+    <div id="playerModal" class="player-modal hidden" tabindex="-1">
+      <div class="player-modal-card">
+        <div class="modal-header">
+          <h3 id="playerModalTitle">Player details</h3>
+          <button id="closePlayerModal" class="close-btn" aria-label="Close player details">×</button>
+        </div>
+        <div id="playerModalContent" class="player-modal-content"></div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>
