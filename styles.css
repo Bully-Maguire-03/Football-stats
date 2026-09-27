@@ -1,492 +1,484 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --bg: #0c1220;
-  --bg-2: #111b2d;
-  --panel: rgba(19, 28, 43, 0.95);
-  --line: rgba(137, 185, 255, 0.18);
-  --text: #edf4ff;
-  --muted: #98a9c3;
-  --blue: #49a6ff;
-  --cyan: #6fe8ff;
-  --green: #7ee4ae;
-  --orange: #ffb067;
-  --red: #ff786e;
-  --shadow: rgba(8, 15, 30, 0.48);
-}
-
-body {
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top left, rgba(73, 166, 255, 0.15), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(110, 232, 255, 0.08), transparent 30%),
-    linear-gradient(140deg, #071019 0%, #0b1220 25%, #101b2e 100%);
-  color: var(--text);
-}
-
-button, input, select {
-  font: inherit;
-}
-
-.app-shell {
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 28px 18px 50px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  padding: 18px 28px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: linear-gradient(135deg, rgba(15, 22, 33, 0.96), rgba(25, 35, 55, 0.92));
-  box-shadow: 0 18px 45px var(--shadow);
-}
-
-.brand-block {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.crest {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: white;
-  border: 2px solid rgba(255,255,255,0.25);
-}
-
-.crest-barca {
-  background: linear-gradient(135deg, #0d49b5, #c71d26);
-}
-
-.brand-copy .brand-kicker {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--cyan);
-}
-
-.brand-copy h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.5rem, 2vw, 2.4rem);
-  font-weight: 700;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.tab-button, .admin-toggle-btn, .unlock-btn, .save-btn, .apply-event-btn, .undo-btn, .sort-toggle, .export-btn, .import-btn {
-  border: 1px solid rgba(128, 175, 255, 0.32);
-  color: var(--text);
-  background: rgba(17, 28, 42, 0.9);
-  padding: 10px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.tab-button:hover, .admin-toggle-btn:hover, .unlock-btn:hover, .save-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(87, 176, 255, 0.7);
-}
-
-.tab-button.active {
-  background: linear-gradient(135deg, rgba(73,166,255,0.28), rgba(111,232,255,0.14));
-  border-color: rgba(111,232,255,0.7);
-  box-shadow: 0 0 0 1px rgba(111,232,255,0.15);
-}
-
-.main-area {
-  margin-top: 24px;
-}
-
-.tab-panel.hidden {
-  display: none;
-}
-
-.controls-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.search-box, .filter-select {
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(16, 25, 38, 0.92);
-  color: var(--text);
-  flex: 1;
-  min-width: 150px;
-}
-
-.summary-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 26px;
-}
-
-.summary-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: rgba(14, 24, 37, 0.85);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.summary-card span {
-  color: var(--muted);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-}
-
-.summary-card strong {
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-
-.summary-card.accent { border-color: rgba(111,232,255,0.35); }
-.summary-card.blue { border-color: rgba(73,166,255,0.35); }
-.summary-card.green { border-color: rgba(126,228,174,0.32); }
-.summary-card.orange { border-color: rgba(255,176,103,0.34); }
-
-.ranking-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(260px, 1fr));
-  gap: 18px;
-}
-
-.position-panel {
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(15,24,36,0.95), rgba(18,28,43,0.93));
-  overflow: hidden;
-  box-shadow: 0 18px 38px rgba(7, 14, 24, 0.35);
-}
-
-.position-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.position-header h3 {
-  font-size: 1.15rem;
-  text-transform: uppercase;
-}
-
-.position-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 62px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--bg);
-}
-
-.position-panel.GK .position-badge { background: linear-gradient(135deg, #8ec7ff, #64dbff); }
-.position-panel.DF .position-badge { background: linear-gradient(135deg, #7ee4ae, #54d4e0); }
-.position-panel.MF .position-badge { background: linear-gradient(135deg, #f0c96d, #ffc778); }
-.position-panel.AT .position-badge { background: linear-gradient(135deg, #ffb067, #ff8f6d); }
-
-.player-card-list {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.player-card {
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  background: rgba(21, 32, 49, 0.82);
-  padding: 14px;
-  transition: 0.2s ease;
-  cursor: pointer;
-}
-
-.player-card:hover {
-  border-color: rgba(110, 232, 255, 0.35);
-  box-shadow: 0 12px 20px rgba(8, 14, 24, 0.22);
-}
-
-.player-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.player-points {
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #08131d;
-  background: linear-gradient(135deg, #a6edff, #77d4ff);
-}
-
-.player-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.player-name {
-  font-weight: 600;
-  font-size: 1.02rem;
-}
-
-.player-club {
-  color: var(--muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-}
-
-.admin-panel {
-  position: fixed;
-  top: 22px;
-  right: 22px;
-  z-index: 40;
-  width: min(440px, calc(100vw - 28px));
-  padding: 18px;
-  border-radius: 20px;
-  background: rgba(10, 17, 28, 0.96);
-  border: 1px solid rgba(111,232,255,0.28);
-  box-shadow: 0 24px 60px rgba(2, 10, 17, 0.42);
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.admin-panel.hidden {
-  display: none;
-}
-
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.panel-close-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.02);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.admin-login-box {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.admin-login-box label {
-  color: var(--muted);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-}
-
-.admin-login-box input {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(128,175,255,0.22);
-  background: rgba(16, 25, 38, 0.92);
-  color: var(--text);
-}
-
-.editor-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.editor-row select {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(128,175,255,0.22);
-  background: rgba(16, 25, 38, 0.92);
-  color: var(--text);
-}
-
-.admin-editor.hidden {
-  display: none;
-}
-
-.player-form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-.player-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
-.player-form input {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(128,175,255,0.22);
-  background: rgba(16, 25, 38, 0.92);
-  color: var(--text);
-}
-
-.event-logger {
-  background: rgba(15, 24, 36, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.event-logger h2 {
-  margin-bottom: 18px;
-  font-size: 1.4rem;
-}
-
-.event-form {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(150px, 1fr));
-  gap: 12px;
-}
-
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-row label {
-  color: var(--muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-}
-
-.form-row select, .form-row input {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(128,175,255,0.22);
-  background: rgba(16, 25, 38, 0.92);
-  color: var(--text);
-}
-
-.apply-event-btn, .undo-btn {
-  grid-column: span 1;
-  margin-top: auto;
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.history-item {
-  padding: 14px 18px;
-  background: rgba(15, 24, 36, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.history-info {
-  flex: 1;
-}
-
-.history-player {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.history-event {
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.history-value {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  background: rgba(73, 166, 255, 0.2);
-}
-
-.export-controls {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.export-preview {
-  padding: 18px;
-  background: rgba(15, 24, 36, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  max-height: 400px;
-  overflow-y: auto;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-}
-
-@media (max-width: 1120px) {
-  .ranking-grid {
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+const STORAGE_KEYS = {
+  players: 'pitchrank_players_v3',
+  history: 'pitchrank_history_v3',
+  adminEmail: 'pitchrank_admin_email_v3'
+};
+
+const DEFAULT_ADMIN_EMAIL = 'yourname@gmail.com';
+
+const eventRules = {
+  GK: [
+    { label: 'Save Made', stat: 'Reflexes', delta: 0.15 },
+    { label: '1v1 Rush / Claim', stat: 'Positioning', delta: 0.20 },
+    { label: 'Dropped Ball / Spill', stat: 'Handling', delta: -0.25 },
+    { label: 'Accurate Long Kick', stat: 'Distribution', delta: 0.10 },
+    { label: 'Clean Sheet', stat: 'Positioning', delta: 0.40 },
+    { label: 'Clean Sheet Handling', stat: 'Handling', delta: 0.20 },
+    { label: 'Goal Conceded', stat: 'Positioning', delta: -0.20 }
+  ],
+  DF: [
+    { label: 'Successful Tackle', stat: 'Tackling', delta: 0.25 },
+    { label: 'Interception', stat: 'Awareness', delta: 0.20 },
+    { label: 'Aerial Duel Won', stat: 'Aerial Ability', delta: 0.15 },
+    { label: 'Beaten 1v1', stat: 'Tackling', delta: -0.15 },
+    { label: 'Caught Out of Position', stat: 'Awareness', delta: -0.20 },
+    { label: 'Clean Sheet', stat: 'Awareness', delta: 0.30 }
+  ],
+  MF: [
+    { label: 'Assist', stat: 'Vision', delta: 0.30 },
+    { label: 'Chance Created', stat: 'Vision', delta: 0.15 },
+    { label: 'Completed Pass', stat: 'Passing', delta: 0.02 },
+    { label: 'Successful Dribble', stat: 'Ball Control', delta: 0.15 },
+    { label: 'Ball Loss', stat: 'Ball Control', delta: -0.12 },
+    { label: 'Defensive Tackle', stat: 'Defending', delta: 0.15 }
+  ],
+  AT: [
+    { label: 'Goal Scored', stat: 'Finishing', delta: 0.35 },
+    { label: 'Shot on Target', stat: 'Shot Power', delta: 0.10 },
+    { label: 'Big Chance Missed', stat: 'Finishing', delta: -0.25 },
+    { label: 'Shot Off-Target', stat: 'Shot Power', delta: -0.05 },
+    { label: 'Successful Dribble', stat: 'Dribbling', delta: 0.15 },
+    { label: 'Smart Attacking Run', stat: 'Positioning', delta: 0.10 }
+  ],
+  Universal: [
+    { label: 'Ball Recovery', stat: 'Physical', delta: 0.05 },
+    { label: 'Foul Committed', stat: 'Physical', delta: -0.05 },
+    { label: 'Sprint Won', stat: 'Pace', delta: 0.05 },
+    { label: 'Red Card', stat: 'Physical', delta: -0.50 }
+  ]
+};
+
+const statFields = [
+  'Reflexes', 'Positioning', 'Handling', 'Distribution',
+  'Tackling', 'Awareness', 'Aerial Ability', 'Vision',
+  'Passing', 'Ball Control', 'Defending', 'Finishing',
+  'Shot Power', 'Dribbling', 'Physical', 'Pace',
+  'Claim', 'Long Kick', 'Interception', 'Chance Created',
+  'Successful Dribble', 'Goal Scored', 'Attacking Run',
+  'Big Chance Missed', 'Shot Off-Target', 'Ball Loss',
+  'Defensive Tackle', 'Assist', 'Clean Sheet', 'Goal Conceded'
+];
+
+const defaultPlayers = [
+  { id: 'gk-1', name: 'Zishan', club: 'Barça', position: 'GK', totalPoints: 0, stats: { Reflexes: 82, Positioning: 78, Handling: 79, Distribution: 74, Physical: 68, Pace: 70 } },
+  { id: 'df-1', name: 'Naresh', club: 'Barça', position: 'DF', totalPoints: 0, stats: { Tackling: 71, Awareness: 76, 'Aerial Ability': 72, Physical: 71, Pace: 72 } },
+  { id: 'df-2', name: 'Ibrahim', club: 'Barça', position: 'DF', totalPoints: 0, stats: { Tackling: 69, Awareness: 74, 'Aerial Ability': 70, Physical: 69, Pace: 73 } },
+  { id: 'mf-1', name: 'Ihsan', club: 'Barça', position: 'MF', totalPoints: 0, stats: { Vision: 81, Passing: 78, 'Ball Control': 80, Defending: 72, Physical: 74, Pace: 76 } },
+  { id: 'mf-2', name: 'M.Akhsar', club: 'Barça', position: 'MF', totalPoints: 0, stats: { Vision: 78, Passing: 77, 'Ball Control': 76, Defending: 68, Physical: 72, Pace: 79 } },
+  { id: 'mf-3', name: 'Rusndi', club: 'Barça', position: 'MF', totalPoints: 0, stats: { Vision: 72, Passing: 80, 'Ball Control': 73, Defending: 71, Physical: 75, Pace: 74 } },
+  { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', totalPoints: 0, stats: { Vision: 77, Passing: 76, 'Ball Control': 74, Defending: 75, Physical: 76, Pace: 70 } },
+  { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', totalPoints: 0, stats: { Finishing: 79, 'Shot Power': 76, Dribbling: 75, Positioning: 72, Physical: 71, Pace: 82 } },
+  { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', totalPoints: 0, stats: { Finishing: 70, 'Shot Power': 73, Dribbling: 78, Positioning: 70, Physical: 68, Pace: 80 } },
+
+  { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', totalPoints: 0, stats: { Reflexes: 80, Positioning: 76, Handling: 78, Distribution: 72, Physical: 70, Pace: 69 } },
+  { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', totalPoints: 0, stats: { Tackling: 72, Awareness: 75, 'Aerial Ability': 71, Physical: 73, Pace: 74 } },
+  { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', totalPoints: 0, stats: { Tackling: 66, Awareness: 70, 'Aerial Ability': 68, Physical: 67, Pace: 71 } },
+  { id: 'mf-5', name: 'Khush', club: 'Madrid', position: 'MF', totalPoints: 0, stats: { Vision: 73, Passing: 78, 'Ball Control': 79, Defending: 71, Physical: 72, Pace: 77 } },
+  { id: 'mf-6', name: 'Ishan', club: 'Madrid', position: 'MF', totalPoints: 0, stats: { Vision: 75, Passing: 73, 'Ball Control': 72, Defending: 70, Physical: 71, Pace: 75 } },
+  { id: 'mf-7', name: 'Mishal', club: 'Madrid', position: 'MF', totalPoints: 0, stats: { Vision: 74, Passing: 75, 'Ball Control': 77, Defending: 72, Physical: 73, Pace: 76 } },
+  { id: 'mf-8', name: 'Zayan', club: 'Madrid', position: 'MF', totalPoints: 0, stats: { Vision: 76, Passing: 74, 'Ball Control': 75, Defending: 73, Physical: 72, Pace: 78 } },
+  { id: 'at-3', name: 'Sayed', club: 'Madrid', position: 'AT', totalPoints: 0, stats: { Finishing: 72, 'Shot Power': 74, Dribbling: 76, Positioning: 71, Physical: 70, Pace: 81 } },
+  { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', totalPoints: 0, stats: { Finishing: 75, 'Shot Power': 73, Dribbling: 74, Positioning: 70, Physical: 72, Pace: 79 } }
+];
+
+let currentAdminEmail = localStorage.getItem(STORAGE_KEYS.adminEmail) || DEFAULT_ADMIN_EMAIL;
+
+function getPlayers() {
+  const saved = localStorage.getItem(STORAGE_KEYS.players);
+  if (!saved) {
+    localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(defaultPlayers));
+    return [...defaultPlayers];
   }
-  .event-form {
-    grid-template-columns: 1fr;
+
+  try {
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) && parsed.length ? parsed : [...defaultPlayers];
+  } catch {
+    return [...defaultPlayers];
   }
 }
 
-@media (max-width: 760px) {
-  .topbar {
-    flex-direction: column;
-  }
-  .header-actions {
-    width: 100%;
-  }
-  .ranking-grid, .summary-strip {
-    grid-template-columns: 1fr;
+function savePlayers(players) {
+  localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(players));
+}
+
+function getHistory() {
+  const saved = localStorage.getItem(STORAGE_KEYS.history);
+  try {
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
   }
 }
+
+function saveHistory(history) {
+  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history));
+}
+
+function calculatePlayerPoints(player) {
+  const stats = player.stats || {};
+  let total = 0;
+
+  const allRules = [...(eventRules[player.position] || []), ...(eventRules.Universal || [])];
+  allRules.forEach(rule => {
+    const value = Number(stats[rule.stat] || 0);
+    total += value * rule.delta;
+  });
+
+  return Number(total.toFixed(2));
+}
+
+function makePlayerPointsCurrent() {
+  const players = getPlayers();
+  players.forEach(player => {
+    player.totalPoints = calculatePlayerPoints(player);
+  });
+  savePlayers(players);
+}
+
+function getEventChoices(position) {
+  return [...(eventRules[position] || []), ...(eventRules.Universal || [])].map(rule => rule.label);
+}
+
+function renderSummary() {
+  const players = getPlayers();
+  document.getElementById('summaryGK').textContent = players.filter(p => p.position === 'GK').length;
+  document.getElementById('summaryDF').textContent = players.filter(p => p.position === 'DF').length;
+  document.getElementById('summaryMF').textContent = players.filter(p => p.position === 'MF').length;
+  document.getElementById('summaryAT').textContent = players.filter(p => p.position === 'AT').length;
+}
+
+function renderRankings() {
+  const grid = document.getElementById('rankingGrid');
+  const players = getPlayers();
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filter = document.getElementById('filterPosition').value;
+
+  const filtered = players.filter(player => {
+    const matchSearch = !search || player.name.toLowerCase().includes(search);
+    const matchPos = !filter || player.position === filter;
+    return matchSearch && matchPos;
+  });
+
+  const positions = ['GK', 'DF', 'MF', 'AT'];
+
+  grid.innerHTML = positions
+    .filter(pos => !filter || pos === filter)
+    .map(pos => {
+      const positionPlayers = filtered
+        .filter(p => p.position === pos)
+        .sort((a, b) => b.totalPoints - a.totalPoints);
+
+      const cards = positionPlayers.map((player, index) => {
+        const statMap = Object.entries(player.stats || {}).slice(0, 4);
+        const statPills = statMap.map(([key, value]) => `<span class="stat-pill">${key}<strong>${value}</strong></span>`).join('');
+        const teamClass = player.club.toLowerCase().includes('bar') ? 'barca' : 'madrid';
+
+        return `
+          <article class="player-card">
+            <div class="player-card-top">
+              <span>#${index + 1}</span>
+              <span class="player-points">${player.totalPoints.toFixed(2)} pts</span>
+            </div>
+            <div class="player-row">
+              <span class="player-name">${player.name}</span>
+              <span class="team-badge ${teamClass}">${player.club}</span>
+            </div>
+            <div class="stat-strip">${statPills}</div>
+          </article>
+        `;
+      }).join('');
+
+      return `
+        <section class="position-panel ${pos}">
+          <div class="position-header">
+            <h3>${pos === 'GK' ? 'Goalkeepers' : pos === 'DF' ? 'Defenders' : pos === 'MF' ? 'Midfielders' : 'Attackers'}</h3>
+            <span class="position-badge">${pos}</span>
+          </div>
+          <div class="player-card-list">
+            ${cards || '<div style="padding:12px;color:var(--muted);">No players found.</div>'}
+          </div>
+        </section>
+      `;
+    }).join('');
+}
+
+function renderEventSelects() {
+  const players = getPlayers();
+  const eventPlayer = document.getElementById('eventPlayerSelect');
+  const eventType = document.getElementById('eventTypeSelect');
+
+  eventPlayer.innerHTML = players.map(player => `<option value="${player.id}">${player.name} (${player.position})</option>`).join('');
+  updateEventChoices();
+  eventType.value = eventType.options[0]?.value || '';
+}
+
+function updateEventChoices() {
+  const playerId = document.getElementById('eventPlayerSelect').value;
+  const player = getPlayers().find(item => item.id === playerId);
+  const eventType = document.getElementById('eventTypeSelect');
+
+  const options = getEventChoices(player?.position || 'GK');
+  eventType.innerHTML = options.map(label => `<option value="${label}">${label}</option>`).join('');
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const list = document.getElementById('historyList');
+
+  if (!history.length) {
+    list.innerHTML = '<div class="history-item"><div class="history-info">No match events logged yet.</div></div>';
+    return;
+  }
+
+  list.innerHTML = [...history].reverse().map(entry => {
+    const sign = entry.pointsDelta >= 0 ? '+' : '';
+    const color = entry.pointsDelta >= 0 ? 'rgba(126,228,174,0.18)' : 'rgba(255,120,110,0.18)';
+    return `
+      <div class="history-item">
+        <div class="history-info">
+          <div class="history-player">${entry.playerName}</div>
+          <div class="history-event">${entry.eventLabel} × ${entry.quantity} • ${new Date(entry.timestamp).toLocaleString()}</div>
+        </div>
+        <div class="history-value" style="background:${color};">${sign}${entry.pointsDelta.toFixed(2)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function applyEvent() {
+  const playerId = document.getElementById('eventPlayerSelect').value;
+  const eventLabel = document.getElementById('eventTypeSelect').value;
+  const quantity = Number(document.getElementById('eventQuantity').value || 1);
+
+  const players = getPlayers();
+  const player = players.find(item => item.id === playerId);
+  if (!player) return;
+
+  const allRules = [...(eventRules[player.position] || []), ...(eventRules.Universal || [])];
+  const rule = allRules.find(item => item.label === eventLabel);
+  if (!rule) return;
+
+  const delta = Number((rule.delta * quantity).toFixed(2));
+  player.totalPoints = Number((player.totalPoints + delta).toFixed(2));
+
+  const currentStat = Number(player.stats[rule.stat] || 0);
+  player.stats[rule.stat] = Number((currentStat + rule.delta * quantity).toFixed(2));
+
+  const history = getHistory();
+  history.push({
+    timestamp: new Date().toISOString(),
+    playerId: player.id,
+    playerName: player.name,
+    eventLabel,
+    quantity,
+    pointsDelta: delta
+  });
+
+  saveHistory(history);
+  savePlayers(players);
+  renderSummary();
+  renderRankings();
+  renderHistory();
+  document.getElementById('eventQuantity').value = '1';
+}
+
+function undoLastEvent() {
+  const history = getHistory();
+  if (!history.length) return;
+
+  const last = history.pop();
+  const players = getPlayers();
+  const player = players.find(item => item.id === last.playerId);
+  if (!player) {
+    saveHistory(history);
+    return;
+  }
+
+  const allRules = [...(eventRules[player.position] || []), ...(eventRules.Universal || [])];
+  const matchingRule = allRules.find(item => item.label === last.eventLabel);
+
+  if (matchingRule) {
+    player.totalPoints = Number((player.totalPoints - last.pointsDelta).toFixed(2));
+    const currentStat = Number(player.stats[matchingRule.stat] || 0);
+    player.stats[matchingRule.stat] = Number((currentStat - matchingRule.delta * last.quantity).toFixed(2));
+  }
+
+  saveHistory(history);
+  savePlayers(players);
+  renderSummary();
+  renderRankings();
+  renderHistory();
+}
+
+function renderAdminEditor() {
+  const players = getPlayers();
+  const select = document.getElementById('playerSelect');
+  const form = document.getElementById('playerForm');
+
+  select.innerHTML = players.map(player => `<option value="${player.id}">${player.name} (${player.position})</option>`).join('');
+  const selectedId = select.value || players[0]?.id;
+  const selectedPlayer = players.find(item => item.id === selectedId) || players[0];
+  if (!selectedPlayer) return;
+
+  form.innerHTML = `
+    <label>
+      <span>Name</span>
+      <input type="text" name="name" value="${selectedPlayer.name}" />
+    </label>
+    <label>
+      <span>Club</span>
+      <input type="text" name="club" value="${selectedPlayer.club}" />
+    </label>
+    <label>
+      <span>Position</span>
+      <select name="position">
+        <option value="GK" ${selectedPlayer.position === 'GK' ? 'selected' : ''}>GK</option>
+        <option value="DF" ${selectedPlayer.position === 'DF' ? 'selected' : ''}>DF</option>
+        <option value="MF" ${selectedPlayer.position === 'MF' ? 'selected' : ''}>MF</option>
+        <option value="AT" ${selectedPlayer.position === 'AT' ? 'selected' : ''}>AT</option>
+      </select>
+    </label>
+    ${statFields.map(stat => `
+      <label>
+        <span>${stat}</span>
+        <input type="number" step="0.1" name="${stat}" value="${Number(selectedPlayer.stats?.[stat] || 0)}" />
+      </label>
+    `).join('')}
+  `;
+}
+
+function savePlayerEdits() {
+  const players = getPlayers();
+  const selectedId = document.getElementById('playerSelect').value;
+  const player = players.find(item => item.id === selectedId);
+  if (!player) return;
+
+  const form = document.getElementById('playerForm');
+  const formData = new FormData(form);
+
+  player.name = formData.get('name') || player.name;
+  player.club = formData.get('club') || player.club;
+  player.position = formData.get('position') || player.position;
+
+  const stats = { ...(player.stats || {}) };
+  statFields.forEach(stat => {
+    const val = Number(formData.get(stat));
+    stats[stat] = Number.isFinite(val) ? val : 0;
+  });
+
+  player.stats = stats;
+  player.totalPoints = calculatePlayerPoints(player);
+
+  savePlayers(players);
+  renderSummary();
+  renderRankings();
+}
+
+function unlockAdmin() {
+  const entered = document.getElementById('adminEmailInput').value.trim().toLowerCase();
+  const stored = localStorage.getItem(STORAGE_KEYS.adminEmail) || DEFAULT_ADMIN_EMAIL;
+
+  if (entered === stored.toLowerCase() || entered === DEFAULT_ADMIN_EMAIL.toLowerCase()) {
+    currentAdminEmail = entered || DEFAULT_ADMIN_EMAIL;
+    localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
+    document.getElementById('adminEditor').classList.remove('hidden');
+    renderAdminEditor();
+  } else {
+    alert('Access denied. Use your admin Gmail.');
+  }
+}
+
+function setTab(tabName) {
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+  document.getElementById('rankingsTab').classList.toggle('hidden', tabName !== 'rankings');
+  document.getElementById('eventsTab').classList.toggle('hidden', tabName !== 'events');
+  document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'history');
+  document.getElementById('exportTab').classList.toggle('hidden', tabName !== 'export');
+
+  if (tabName === 'events') renderEventSelects();
+  if (tabName === 'history') renderHistory();
+}
+
+function exportJson() {
+  const payload = { players: getPlayers(), history: getHistory() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pitchrank-${Date.now()}.json`;
+  a.click();
+}
+
+function exportCsv() {
+  const players = getPlayers();
+  let csv = 'Name,Club,Position,TotalPoints\n';
+  players.forEach(player => {
+    csv += `${player.name},${player.club},${player.position},${player.totalPoints}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pitchrank-${Date.now()}.csv`;
+  a.click();
+}
+
+function importData() {
+  document.getElementById('importFile').click();
+}
+
+function initEvents() {
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => setTab(button.dataset.tab));
+  });
+
+  document.getElementById('searchInput').addEventListener('input', renderRankings);
+  document.getElementById('filterPosition').addEventListener('change', renderRankings);
+  document.getElementById('eventPlayerSelect').addEventListener('change', updateEventChoices);
+  document.getElementById('applyEventBtn').addEventListener('click', applyEvent);
+  document.getElementById('undoLastBtn').addEventListener('click', undoLastEvent);
+  document.getElementById('unlockAdminBtn').addEventListener('click', unlockAdmin);
+  document.getElementById('savePlayerBtn').addEventListener('click', savePlayerEdits);
+  document.getElementById('playerSelect').addEventListener('change', renderAdminEditor);
+  document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
+  document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+  document.getElementById('importBtn').addEventListener('click', importData);
+  document.getElementById('adminBtn').addEventListener('click', () => document.getElementById('adminPanel').classList.toggle('hidden'));
+  document.getElementById('closeAdminBtn').addEventListener('click', () => document.getElementById('adminPanel').classList.add('hidden'));
+
+  document.getElementById('importFile').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (data.players) localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(data.players));
+        if (data.history) localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(data.history));
+        makePlayerPointsCurrent();
+        renderSummary();
+        renderRankings();
+        renderHistory();
+        alert('Data imported successfully.');
+      } catch {
+        alert('Invalid JSON file.');
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function init() {
+  makePlayerPointsCurrent();
+  renderSummary();
+  renderRankings();
+  renderEventSelects();
+  renderHistory();
+  initEvents();
+  document.getElementById('adminPanel').classList.add('hidden');
+}
+
+init();

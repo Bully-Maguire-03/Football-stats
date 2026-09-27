@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PitchRank | Player Rankings</title>
+  <title>PitchRank | Football Player Rankings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -13,26 +13,26 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-block">
-        <div class="crest crest-barca">FC</div>
+        <div class="brand-mark">⚽</div>
         <div class="brand-copy">
           <span class="brand-kicker">PitchRank</span>
           <h1>Football Player Rankings</h1>
         </div>
       </div>
 
-      <div class="header-actions">
+      <nav class="header-actions">
         <button class="tab-button active" data-tab="rankings">Rankings</button>
         <button class="tab-button" data-tab="events">Match Events</button>
         <button class="tab-button" data-tab="history">History</button>
         <button class="tab-button" data-tab="export">Export</button>
-        <button id="adminToggleBtn" class="admin-toggle-btn">Admin</button>
-      </div>
+        <button id="adminBtn" class="admin-toggle-btn">Admin</button>
+      </nav>
     </header>
 
     <aside id="adminPanel" class="admin-panel hidden">
       <div class="admin-header">
-        <h3>⚙️ Admin Panel</h3>
-        <button id="closeAdminPanelBtn" class="panel-close-btn">✕</button>
+        <h3>Admin Panel</h3>
+        <button id="closeAdminBtn" class="panel-close-btn" aria-label="Close admin panel">✕</button>
       </div>
 
       <div class="admin-login-box">
@@ -43,7 +43,7 @@
 
       <div id="adminEditor" class="admin-editor hidden">
         <div class="editor-row">
-          <label for="playerSelect">Select Player</label>
+          <label for="playerSelect">Player</label>
           <select id="playerSelect"></select>
         </div>
         <div id="playerForm" class="player-form"></div>
@@ -52,18 +52,16 @@
     </aside>
 
     <main class="main-area">
-      <!-- RANKINGS TAB -->
       <section id="rankingsTab" class="tab-panel active">
         <div class="controls-bar">
-          <input type="text" id="searchInput" placeholder="🔍 Search player..." class="search-box" />
+          <input id="searchInput" class="search-box" type="text" placeholder="Search player..." />
           <select id="filterPosition" class="filter-select">
-            <option value="">All Positions</option>
+            <option value="">All positions</option>
             <option value="GK">Goalkeepers</option>
             <option value="DF">Defenders</option>
             <option value="MF">Midfielders</option>
             <option value="AT">Attackers</option>
           </select>
-          <button id="sortToggle" class="sort-toggle">⬇️ Sort by Points</button>
         </div>
 
         <div class="summary-strip">
@@ -88,45 +86,46 @@
         <div id="rankingGrid" class="ranking-grid"></div>
       </section>
 
-      <!-- MATCH EVENTS TAB -->
       <section id="eventsTab" class="tab-panel hidden">
-        <div class="event-logger">
-          <h2>📝 Log Match Event</h2>
+        <div class="event-logger panel-card">
+          <h2>⚡ Match Event Logger</h2>
           <div class="event-form">
             <div class="form-row">
               <label>Player</label>
               <select id="eventPlayerSelect"></select>
             </div>
             <div class="form-row">
-              <label>Event Type</label>
+              <label>Event</label>
               <select id="eventTypeSelect"></select>
             </div>
             <div class="form-row">
               <label>Quantity</label>
-              <input type="number" id="eventQuantity" value="1" min="1" />
+              <input id="eventQuantity" type="number" min="1" value="1" />
             </div>
-            <button id="applyEventBtn" class="apply-event-btn">⚡ Apply Event</button>
-            <button id="undoLastBtn" class="undo-btn">↶ Undo Last</button>
+            <button id="applyEventBtn" class="apply-event-btn">Apply Event</button>
+            <button id="undoLastBtn" class="undo-btn">Undo Last</button>
           </div>
         </div>
       </section>
 
-      <!-- HISTORY TAB -->
       <section id="historyTab" class="tab-panel hidden">
-        <h2>📋 Match History</h2>
-        <div id="historyList" class="history-list"></div>
+        <div class="panel-card">
+          <h2>📋 Match History</h2>
+          <div id="historyList" class="history-list"></div>
+        </div>
       </section>
 
-      <!-- EXPORT TAB -->
       <section id="exportTab" class="tab-panel hidden">
-        <h2>💾 Data Export & Import</h2>
-        <div class="export-controls">
-          <button id="exportJsonBtn" class="export-btn">📥 Export as JSON</button>
-          <button id="exportCsvBtn" class="export-btn">📥 Export as CSV</button>
-          <button id="importBtn" class="import-btn">📤 Import Data</button>
-          <input type="file" id="importFile" accept=".json" style="display:none;" />
+        <div class="panel-card">
+          <h2>💾 Export & Import</h2>
+          <div class="export-controls">
+            <button id="exportJsonBtn" class="export-btn">Export JSON</button>
+            <button id="exportCsvBtn" class="export-btn">Export CSV</button>
+            <button id="importBtn" class="import-btn">Import Data</button>
+            <input id="importFile" type="file" accept=".json" style="display:none" />
+          </div>
+          <div id="exportPreview" class="export-preview"></div>
         </div>
-        <div id="exportPreview" class="export-preview"></div>
       </section>
     </main>
   </div>

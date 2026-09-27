@@ -1,295 +1,509 @@
-const STORAGE_KEYS = { players: 'pitchrank_players_v2', history: 'pitchrank_history', adminEmail: 'pitchrank_admin_email' };
-const DEFAULT_ADMIN_EMAIL = 'yourname@gmail.com';
-
-const eventMap = {
-  GK: ['Save Made', 'Claim', 'Long Kick', 'Clean Sheet', 'Goal Conceded', 'Dropped Ball'],
-  DF: ['Successful Tackle', 'Interception', 'Aerial Duel Won', 'Beaten 1v1', 'Caught Out of Position', 'Clean Sheet'],
-  MF: ['Assist', 'Chance Created', 'Completed Pass', 'Successful Dribble', 'Ball Loss', 'Defensive Tackle'],
-  AT: ['Goal Scored', 'Shot on Target', 'Big Chance Missed', 'Shot Off-Target', 'Successful Dribble', 'Attacking Run']
-};
-
-const positionRules = {
-  GK: { 'Save Made': 0.15, Claim: 0.20, 'Long Kick': 0.10, 'Clean Sheet': 0.40, 'Goal Conceded': -0.20, 'Dropped Ball': -0.25 },
-  DF: { 'Successful Tackle': 0.25, Interception: 0.20, 'Aerial Duel Won': 0.15, 'Beaten 1v1': -0.15, 'Caught Out of Position': -0.20, 'Clean Sheet': 0.30 },
-  MF: { Assist: 0.30, 'Chance Created': 0.15, 'Completed Pass': 0.02, 'Successful Dribble': 0.15, 'Ball Loss': -0.12, 'Defensive Tackle': 0.15 },
-  AT: { 'Goal Scored': 0.35, 'Shot on Target': 0.10, 'Big Chance Missed': -0.25, 'Shot Off-Target': -0.05, 'Successful Dribble': 0.15, 'Attacking Run': 0.10 }
-};
-
-const defaultPlayers = [
-  { id: 'gk-1', name: 'Zishan', club: 'Barça', position: 'GK', totalPoints: 0 },
-  { id: 'df-1', name: 'Naresh', club: 'Barça', position: 'DF', totalPoints: 0 },
-  { id: 'df-2', name: 'Ibrahim', club: 'Barça', position: 'DF', totalPoints: 0 },
-  { id: 'mf-1', name: 'Ihsan', club: 'Barça', position: 'MF', totalPoints: 0 },
-  { id: 'mf-2', name: 'M.Akhsar', club: 'Barça', position: 'MF', totalPoints: 0 },
-  { id: 'mf-3', name: 'Rusndi', club: 'Barça', position: 'MF', totalPoints: 0 },
-  { id: 'mf-4', name: 'Suhail', club: 'Barça', position: 'MF', totalPoints: 0 },
-  { id: 'at-1', name: 'Vaibhav', club: 'Barça', position: 'AT', totalPoints: 0 },
-  { id: 'at-2', name: 'M.Ali', club: 'Barça', position: 'AT', totalPoints: 0 },
-  { id: 'gk-2', name: 'Isam', club: 'Madrid', position: 'GK', totalPoints: 0 },
-  { id: 'df-3', name: 'Parthiv', club: 'Madrid', position: 'DF', totalPoints: 0 },
-  { id: 'df-4', name: 'Shahbaz', club: 'Madrid', position: 'DF', totalPoints: 0 },
-  { id: 'mf-5', name: 'Khush', club: 'Madrid', position: 'MF', totalPoints: 0 },
-  { id: 'mf-6', name: 'Ishan', club: 'Madrid', position: 'MF', totalPoints: 0 },
-  { id: 'mf-7', name: 'Mishal', club: 'Madrid', position: 'MF', totalPoints: 0 },
-  { id: 'mf-8', name: 'Zayan', club: 'Madrid', position: 'MF', totalPoints: 0 },
-  { id: 'at-3', name: 'Sayed', club: 'Madrid', position: 'AT', totalPoints: 0 },
-  { id: 'at-4', name: 'Dhruvlal', club: 'Madrid', position: 'AT', totalPoints: 0 }
-];
-
-let currentAdminEmail = localStorage.getItem(STORAGE_KEYS.adminEmail) || DEFAULT_ADMIN_EMAIL;
-
-function getPlayers() {
-  const raw = localStorage.getItem(STORAGE_KEYS.players);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(defaultPlayers));
-    return [...defaultPlayers];
-  }
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    return [...defaultPlayers];
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-function savePlayers(players) {
-  localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(players));
+:root {
+  --bg: #0b1220;
+  --bg-2: #111d2e;
+  --panel: rgba(16, 26, 38, 0.94);
+  --panel-strong: rgba(11, 18, 30, 0.96);
+  --line: rgba(133, 178, 255, 0.18);
+  --text: #eef5ff;
+  --muted: #a7b8cf;
+  --blue: #55a9ff;
+  --cyan: #71e7ff;
+  --green: #8be7ae;
+  --orange: #ffb36a;
+  --red: #ff7b73;
+  --shadow: rgba(2, 8, 18, 0.55);
 }
 
-function getHistory() {
-  const raw = localStorage.getItem(STORAGE_KEYS.history);
-  try {
-    return JSON.parse(raw) || [];
-  } catch (e) {
-    return [];
-  }
+body {
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(85, 169, 255, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(113, 231, 255, 0.12), transparent 35%),
+    linear-gradient(135deg, #08111d 0%, #0d1728 42%, #101d2d 100%);
+  color: var(--text);
 }
 
-function saveHistory(history) {
-  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history));
+button, input, select {
+  font: inherit;
 }
 
-function applyEvent(playerId, eventType, quantity) {
-  const players = getPlayers();
-  const player = players.find(p => p.id === playerId);
-  if (!player) return;
-
-  const multiplier = positionRules[player.position]?.[eventType] || 0;
-  const pointsAdded = multiplier * quantity;
-  player.totalPoints += pointsAdded;
-
-  const history = getHistory();
-  history.push({
-    timestamp: new Date().toISOString(),
-    playerId,
-    playerName: player.name,
-    event: eventType,
-    quantity,
-    pointsAdded,
-    newTotal: player.totalPoints
-  });
-  saveHistory(history);
-  savePlayers(players);
-
-  return { pointsAdded, newTotal: player.totalPoints };
+.app-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 28px 18px 48px;
 }
 
-function undoLast() {
-  const history = getHistory();
-  if (history.length === 0) return false;
-
-  const lastEntry = history.pop();
-  const players = getPlayers();
-  const player = players.find(p => p.id === lastEntry.playerId);
-  if (player) {
-    player.totalPoints = lastEntry.newTotal - lastEntry.pointsAdded;
-    savePlayers(players);
-  }
-  saveHistory(history);
-  return true;
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 26px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(18, 28, 40, 0.96), rgba(21, 33, 51, 0.95));
+  box-shadow: 0 18px 45px var(--shadow);
 }
 
-function getSortedPlayersByPosition(position, searchTerm = '') {
-  return [...getPlayers()]
-    .filter(p => p.position === position && p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => b.totalPoints - a.totalPoints);
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-function renderRankings() {
-  const grid = document.getElementById('rankingGrid');
-  const searchTerm = document.getElementById('searchInput').value;
-  const filterPos = document.getElementById('filterPosition').value;
-  const positions = filterPos ? [filterPos] : ['GK', 'DF', 'MF', 'AT'];
-
-  grid.innerHTML = positions.map(pos => {
-    const players = getSortedPlayersByPosition(pos, searchTerm);
-    const cards = players.map((p, idx) => `
-      <article class="player-card">
-        <div class="player-card-top">
-          <span style="font-weight:600;">#${idx + 1}</span>
-          <span class="player-points">${p.totalPoints.toFixed(2)} pts</span>
-        </div>
-        <div class="player-row">
-          <span class="player-name">${p.name}</span>
-          <span class="player-club">${p.club}</span>
-        </div>
-      </article>
-    `).join('');
-
-    return `
-      <section class="position-panel ${pos}">
-        <div class="position-header">
-          <h3>${pos === 'GK' ? '🧤 Goalkeepers' : pos === 'DF' ? '🛡️ Defenders' : pos === 'MF' ? '⚙️ Midfielders' : '🚀 Attackers'}</h3>
-          <span class="position-badge">${pos}</span>
-        </div>
-        <div class="player-card-list">${cards || '<div style="padding:10px;color:var(--muted);">No players</div>'}</div>
-      </section>
-    `;
-  }).join('');
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0d49b5, #c71d26);
+  font-size: 1.4rem;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
 }
 
-function renderSummary() {
-  const players = getPlayers();
-  document.getElementById('summaryGK').textContent = players.filter(p => p.position === 'GK').length;
-  document.getElementById('summaryDF').textContent = players.filter(p => p.position === 'DF').length;
-  document.getElementById('summaryMF').textContent = players.filter(p => p.position === 'MF').length;
-  document.getElementById('summaryAT').textContent = players.filter(p => p.position === 'AT').length;
+.brand-copy .brand-kicker {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
 }
 
-function renderEventSelects() {
-  const players = getPlayers();
-  const playerSelect = document.getElementById('eventPlayerSelect');
-  playerSelect.innerHTML = players.map(p => `<option value="${p.id}">${p.name} (${p.position})</option>`).join('');
-
-  updateEventTypes();
+.brand-copy h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+  font-weight: 700;
 }
 
-function updateEventTypes() {
-  const playerSelect = document.getElementById('eventPlayerSelect');
-  const eventTypeSelect = document.getElementById('eventTypeSelect');
-  const playerId = playerSelect.value;
-  const player = getPlayers().find(p => p.id === playerId);
-  const events = player ? eventMap[player.position] || [] : [];
-  eventTypeSelect.innerHTML = events.map(e => `<option value="${e}">${e}</option>`).join('');
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-function renderHistory() {
-  const history = getHistory();
-  const list = document.getElementById('historyList');
-  if (history.length === 0) {
-    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">No events logged yet</p>';
-    return;
-  }
-  list.innerHTML = [...history].reverse().map(h => `
-    <div class="history-item">
-      <div class="history-info">
-        <div class="history-player">${h.playerName}</div>
-        <div class="history-event">${h.event} x${h.quantity} • ${new Date(h.timestamp).toLocaleString()}</div>
-      </div>
-      <div class="history-value" style="background: ${h.pointsAdded >= 0 ? 'rgba(126,228,174,0.2)' : 'rgba(255,120,110,0.2)'};">⚡ ${h.pointsAdded >= 0 ? '+' : ''}${h.pointsAdded.toFixed(2)}</div>
-    </div>
-  `).join('');
+.tab-button,
+.admin-toggle-btn,
+.unlock-btn,
+.save-btn,
+.apply-event-btn,
+.undo-btn,
+.export-btn,
+.import-btn {
+  border: 1px solid rgba(128, 175, 255, 0.32);
+  color: var(--text);
+  background: rgba(17, 28, 42, 0.9);
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
-function setTab(tabName) {
-  document.querySelectorAll('.tab-button').forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', !p.id.startsWith(tabName)));
-  if (tabName === 'events') renderEventSelects();
-  if (tabName === 'history') renderHistory();
+.tab-button:hover,
+.admin-toggle-btn:hover,
+.unlock-btn:hover,
+.save-btn:hover,
+.apply-event-btn:hover,
+.undo-btn:hover,
+.export-btn:hover,
+.import-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(87, 176, 255, 0.7);
 }
 
-function init() {
-  renderSummary();
-  renderRankings();
-  renderEventSelects();
-  
-  document.querySelectorAll('.tab-button').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
-  document.getElementById('searchInput').addEventListener('input', renderRankings);
-  document.getElementById('filterPosition').addEventListener('change', renderRankings);
-  document.getElementById('sortToggle').addEventListener('click', renderRankings);
-  document.getElementById('eventPlayerSelect').addEventListener('change', updateEventTypes);
-  
-  document.getElementById('applyEventBtn').addEventListener('click', () => {
-    const playerId = document.getElementById('eventPlayerSelect').value;
-    const eventType = document.getElementById('eventTypeSelect').value;
-    const quantity = parseInt(document.getElementById('eventQuantity').value) || 1;
-    applyEvent(playerId, eventType, quantity);
-    renderSummary();
-    renderRankings();
-    renderHistory();
-    document.getElementById('eventQuantity').value = '1';
-  });
-  
-  document.getElementById('undoLastBtn').addEventListener('click', () => {
-    if (undoLast()) {
-      renderSummary();
-      renderRankings();
-      renderHistory();
-    }
-  });
-  
-  document.getElementById('adminToggleBtn').addEventListener('click', () => {
-    document.getElementById('adminPanel').classList.toggle('hidden');
-  });
-  
-  document.getElementById('closeAdminPanelBtn').addEventListener('click', () => {
-    document.getElementById('adminPanel').classList.add('hidden');
-  });
-  
-  document.getElementById('unlockAdminBtn').addEventListener('click', () => {
-    const email = document.getElementById('adminEmailInput').value.toLowerCase();
-    if (email === currentAdminEmail.toLowerCase() || email === DEFAULT_ADMIN_EMAIL.toLowerCase()) {
-      currentAdminEmail = email;
-      localStorage.setItem(STORAGE_KEYS.adminEmail, currentAdminEmail);
-      document.getElementById('adminEditor').classList.remove('hidden');
-    }
-  });
-  
-  document.getElementById('exportJsonBtn').addEventListener('click', () => {
-    const data = { players: getPlayers(), history: getHistory() };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pitchrank_${Date.now()}.json`;
-    a.click();
-  });
-  
-  document.getElementById('exportCsvBtn').addEventListener('click', () => {
-    const players = getPlayers();
-    let csv = 'Name,Club,Position,Total Points\n';
-    players.forEach(p => csv += `${p.name},${p.club},${p.position},${p.totalPoints}\n`);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pitchrank_${Date.now()}.csv`;
-    a.click();
-  });
-  
-  document.getElementById('importBtn').addEventListener('click', () => {
-    document.getElementById('importFile').click();
-  });
-  
-  document.getElementById('importFile').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target.result);
-        if (data.players) localStorage.setItem(STORAGE_KEYS.players, JSON.stringify(data.players));
-        if (data.history) localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(data.history));
-        renderSummary();
-        renderRankings();
-        alert('Data imported successfully!');
-      } catch (err) {
-        alert('Invalid file format');
-      }
-    };
-    reader.readAsText(file);
-  });
-  
-  document.getElementById('adminPanel').classList.add('hidden');
+.tab-button.active {
+  background: linear-gradient(135deg, rgba(73,166,255,0.28), rgba(111,232,255,0.14));
+  border-color: rgba(111,232,255,0.7);
 }
 
-init();
+.main-area { margin-top: 24px; }
+.tab-panel.hidden { display: none; }
+
+.controls-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.search-box,
+.filter-select,
+.form-row input,
+.form-row select,
+.admin-login-box input,
+.editor-row select,
+.player-form input {
+  background: rgba(16, 25, 38, 0.9);
+  color: var(--text);
+  border: 1px solid rgba(128,175,255,0.22);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.search-box,
+.filter-select {
+  flex: 1;
+  min-width: 180px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(14,24,37,0.86);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.summary-card span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary-card strong {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.summary-card.accent { border-color: rgba(111,232,255,0.35); }
+.summary-card.blue { border-color: rgba(73,166,255,0.35); }
+.summary-card.green { border-color: rgba(126,228,174,0.32); }
+.summary-card.orange { border-color: rgba(255,176,103,0.34); }
+
+.ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(255px, 1fr));
+  gap: 18px;
+}
+
+.position-panel {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(15,24,36,0.96), rgba(18,28,43,0.94));
+  overflow: hidden;
+  box-shadow: 0 18px 38px rgba(7,14,24,0.35);
+}
+
+.position-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.position-header h3 {
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.position-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #08131d;
+}
+
+.position-panel.GK .position-badge { background: linear-gradient(135deg, #8ec7ff, #64dbff); }
+.position-panel.DF .position-badge { background: linear-gradient(135deg, #7ee4ae, #54d4e0); }
+.position-panel.MF .position-badge { background: linear-gradient(135deg, #f0c96d, #ffc778); }
+.position-panel.AT .position-badge { background: linear-gradient(135deg, #ffb067, #ff8f6d); }
+
+.player-card-list {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(21,32,49,0.82);
+  padding: 14px;
+  transition: 0.2s ease;
+}
+
+.player-card:hover {
+  border-color: rgba(110,232,255,0.35);
+  box-shadow: 0 12px 20px rgba(8,14,24,0.22);
+}
+
+.player-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.player-points {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #08131d;
+  background: linear-gradient(135deg, #a6edff, #77d4ff);
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 1.03rem;
+}
+
+.player-club {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.team-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.team-badge.barca { background: rgba(198, 40, 40, 0.18); color: #ff8d8d; }
+.team-badge.madrid { background: rgba(42, 112, 255, 0.18); color: #8db9ff; }
+
+.stat-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(114,152,214,0.12);
+  border: 1px solid rgba(161,205,255,0.12);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.stat-pill strong {
+  color: var(--text);
+}
+
+.panel-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(15,24,36,0.95);
+  padding: 24px;
+  box-shadow: 0 14px 30px rgba(7,14,24,0.24);
+}
+
+.event-logger h2,
+.panel-card h2 {
+  margin-bottom: 18px;
+  font-size: 1.4rem;
+}
+
+.event-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgba(18, 29, 42, 0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.history-info {
+  flex: 1;
+}
+
+.history-player {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.history-event {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.history-value {
+  min-width: 90px;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.export-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-preview {
+  background: rgba(9, 15, 24, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  min-height: 180px;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  overflow: auto;
+}
+
+.admin-panel {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  width: min(440px, calc(100vw - 28px));
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(9, 17, 28, 0.97);
+  border: 1px solid rgba(111,232,255,0.28);
+  box-shadow: 0 24px 60px rgba(2,10,17,0.42);
+  z-index: 40;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.admin-panel.hidden { display: none; }
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.admin-login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.admin-login-box label,
+.editor-row label {
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-editor.hidden { display: none; }
+
+.editor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.player-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.player-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1120px) {
+  .ranking-grid { grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+  .event-form { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; justify-content: flex-start; }
+  .summary-strip, .ranking-grid { grid-template-columns: 1fr; }
+}
