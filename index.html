@@ -1,83 +1,3 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Stats</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <!-- Settings Button -->
-    <button class="settings-btn" onclick="toggleSettings()">⚙️ Settings</button>
-
-    <!-- Settings Panel -->
-    <div class="settings-panel" id="settingsPanel">
-        <div class="settings-content">
-            <h2>Settings</h2>
-            <button class="close-btn" onclick="toggleSettings()">✕</button>
-
-            <!-- Dark/Light Mode Toggle -->
-            <div class="setting-item">
-                <label for="themeToggle">Dark Mode:</label>
-                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-            </div>
-
-            <!-- Background Customization -->
-            <div class="setting-item">
-                <label for="bgColor">Background Color:</label>
-                <input type="color" id="bgColor" onchange="changeBackground()">
-            </div>
-
-            <div class="setting-item">
-                <label for="bgImage">Background Image URL:</label>
-                <input type="text" id="bgImage" placeholder="Enter image URL..." onchange="changeBackground()">
-            </div>
-
-            <!-- Music Player Toggle -->
-            <div class="setting-item">
-                <label for="musicToggle">Enable Music Player:</label>
-                <input type="checkbox" id="musicToggle" onchange="toggleMusicPlayer()">
-            </div>
-
-            <div class="setting-item">
-                <label for="musicUrl">Music URL:</label>
-                <input type="text" id="musicUrl" placeholder="Enter music file URL...">
-            </div>
-
-            <button onclick="loadMusic()" class="load-music-btn">Load Music</button>
-        </div>
-    </div>
-
-    <!-- Music Player -->
-    <div class="music-player" id="musicPlayer" style="display: none;">
-        <div class="player-controls">
-            <button onclick="playPauseMusic()">▶️ Play</button>
-            <button onclick="stopMusic()">⏹️ Stop</button>
-            <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume()">
-            <span id="musicTitle">No Music Loaded</span>
-        </div>
-        <audio id="audioPlayer"></audio>
-    </div>
-
-    <!-- Top Stats Column (Placeholder for your data) -->
-    <div class="top-column">
-        <h3>Stats Overview</h3>
-        <div id="topColumnContent">
-            <p>Add your stats here</p>
-        </div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="main-container">
-        <div class="columns-container" id="columnsContainer">
-            <!-- Columns will be added dynamically here -->
-        </div>
-        <button class="add-column-btn" onclick="addColumn()">+ Add Column</button>
-    </div>
-
-    <script src="script.js"></script>
-=======
 <!doctype html>
 <html lang="en">
 <head>
@@ -89,6 +9,108 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <style>
+    :root {
+      --pitch-night: #0d1f1b;
+      --pitch-green: #163a31;
+      --pitch-gold: #d4a63e;
+      --pitch-gold-deep: #8d6923;
+      --pitch-white: #f7f2e8;
+      --pitch-line: rgba(15, 32, 27, 0.12);
+    }
+
+    body {
+      background: linear-gradient(180deg, #edf3eb 0%, #f7f4ef 100%);
+    }
+
+    .roster-area {
+      position: relative;
+      isolation: isolate;
+      overflow: visible;
+      padding: 26px;
+      border-radius: 6px;
+      background-color: #173b31;
+      background-image:
+        radial-gradient(circle at 50% 57%, transparent 0 86px, rgba(255,255,255,.14) 87px 88px, transparent 89px),
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(255,255,255,.12) calc(50% - 1px) 50%, transparent 50%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 42px, transparent 42px 84px);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    }
+
+    .workspace.viewer-mode {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .roster-area .roster-heading,
+    .roster-area .leaderboard,
+    .roster-area .board-footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .roster-area .roster-heading h2,
+    .roster-area .roster-heading .eyebrow,
+    .roster-area .board-footer {
+      color: var(--pitch-white);
+    }
+
+    .roster-area .player-row {
+      position: relative;
+      margin: 7px 0;
+      padding: 15px 14px;
+      border: 1px solid rgba(17, 39, 32, .12);
+      border-radius: 4px;
+      background: #f7f4e9;
+      color: #172522;
+    }
+
+    .roster-area .player-row.featured {
+      border-left: 3px solid var(--pitch-gold);
+      background: #fff9e9;
+    }
+
+    .roster-area .player-row.featured:before {
+      color: #795819;
+    }
+
+    .roster-area .board-tools select,
+    .roster-area .search-box {
+      border-color: rgba(255,255,255,.34);
+      color: var(--pitch-white);
+    }
+
+    .roster-area .search-box input,
+    .roster-area .board-tools select {
+      color: var(--pitch-white);
+    }
+
+    .roster-area .search-box input::placeholder {
+      color: rgba(247,242,232,.7);
+    }
+
+    .roster-area .board-tools select option {
+      color: #172522;
+    }
+
+    .roster-area .status-dot {
+      background: #d6b65e;
+    }
+
+    .player-name-button {
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      padding: 0;
+      text-align: left;
+      font: 600 15px 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      letter-spacing: -0.03em;
+    }
+
+    .player-name-button:hover,
+    .player-name-button:focus-visible {
+      color: var(--pitch-gold-deep);
+      outline: none;
+    }
     .auth-status{font-family:'DM Mono';font-size:9px;color:var(--teal);letter-spacing:.08em}.small-button{border:1px solid var(--line);background:transparent;color:inherit;padding:7px 10px;font-size:10px;cursor:pointer}.small-button.ghost{color:var(--muted)}.console-copy,.auth-note,.muted-copy{font-size:11px;line-height:1.5;color:var(--muted)}.match-console{border-top:1px solid #394641;margin-top:24px;padding-top:4px}.match-feedback{font-size:10px;line-height:1.4;color:var(--lime);min-height:14px}.match-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:12px}.compact-field{font-family:'DM Mono';font-size:8px;color:#8fa098}.compact-field input{display:block;width:100%;border:0;border-bottom:1px solid #46534e;background:transparent;color:var(--lime);padding:6px 0;font:11px 'DM Mono'}.secondary-button{width:100%;border:1px solid #536159;background:transparent;color:#b5c3bb;padding:10px 12px;margin-top:8px;font-size:10px;cursor:pointer}.feedback-section{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:44px;padding:85px 0 70px;border-top:1px solid var(--line)}.feedback-copy h2{font-size:43px;line-height:.95;letter-spacing:-.06em;margin:0}.feedback-copy h2 em{font-style:normal;color:var(--coral)}.feedback-copy>p:not(.eyebrow){max-width:290px;color:var(--muted);font-size:13px;line-height:1.6}.feedback-form-panel{background:#e8f0e3;padding:24px}.feedback-form-panel textarea{display:block;width:100%;resize:vertical;border:1px solid #b8c5b7;background:transparent;color:var(--ink);padding:8px;margin-top:7px;font:12px 'Space Grotesk'}.feedback-form-panel .field-label{margin-top:14px}.feedback-form-panel .primary-button{margin-top:18px}.feedback-inbox{padding:24px;background:var(--ink);color:white}.feedback-inbox .eyebrow{color:var(--lime)}.feedback-inbox .claim-row{border-color:#3c4843}.feedback-inbox .claim-row span{max-width:190px;line-height:1.4}.feedback-inbox .small-button{color:var(--lime);border-color:#52634f}.rating small,.top-ten-card b small{display:block;color:var(--muted);font:8px 'DM Mono';letter-spacing:.05em;text-align:right}.top-ten-card b small{color:#b9d8ca}
     @media(max-width:900px){.access-section,.feedback-section{grid-template-columns:1fr 1fr}.claims-panel,.feedback-inbox{grid-column:1/-1}.top-ten-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.top-actions .auth-status{display:none}.access-section,.feedback-section{display:block}.claim-panel,.claims-panel,.feedback-form-panel,.feedback-inbox{margin-top:25px}.top-ten-heading{display:block}.top-ten-heading>.mono{display:block;margin-top:12px}.top-ten-grid{grid-template-columns:1fr 1fr}.top-ten-card{min-height:105px;padding:12px}.player-statline{max-width:190px}}
   </style>
@@ -97,6 +119,56 @@
   </style>
   <style>
     .account-chip{display:flex;align-items:center;gap:7px;color:var(--teal);font:9px 'DM Mono';letter-spacing:.05em}.account-dot{display:block;width:7px;height:7px;background:#75c98b;border-radius:50%}.player-row{position:relative}.player-row.featured{background:rgba(199,243,107,.13);border-left:3px solid var(--lime);padding-left:10px}.player-row.featured:before{content:'TOP 10';font:8px 'DM Mono';color:var(--teal);position:absolute;right:82px;top:8px}.google-top-button{display:inline-flex;align-items:center;gap:8px;border:1px solid #dfe6df;background:#fff;color:var(--ink);padding:8px 14px;border-radius:999px;font:10px 'DM Mono';letter-spacing:.08em;cursor:pointer}.google-mark{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e5f0ff;color:#0d6efd;font-weight:700}.google-modal{position:fixed;inset:0;background:rgba(18,30,25,.55);display:grid;place-items:center;z-index:200}.google-modal.hidden{display:none}.google-modal-panel{position:relative;width:min(440px,calc(100vw - 24px));background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px 24px 22px;box-shadow:0 28px 60px rgba(18,30,25,.18)}.google-modal-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}.google-badge{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#fff,#edf2ff)}.google-modal-panel h3{margin:6px 0 0;font-size:28px;letter-spacing:-.06em}.field-block{margin-top:14px}.field-block input,.field-block select{width:100%;border:1px solid #d7dfd8;border-radius:12px;padding:12px 13px;background:#f7faf6;color:var(--ink)}.modal-close{position:absolute;top:16px;right:16px;border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer}.avatar-preview{height:84px;display:grid;place-items:center;margin:18px 0 14px;border:1px dashed #d7dfd8;border-radius:18px;background:#f8faf7}.avatar-preview img{width:62px;height:62px;border-radius:50%;object-fit:cover}.avatar-silhouette{font-size:30px}.fc-card-preview{position:absolute;right:-18px;top:22px;width:260px;background:linear-gradient(180deg,#f9fbf7,#edf3ee);border:1px solid rgba(23,37,34,.12);border-radius:20px;padding:12px 12px 10px;box-shadow:0 18px 32px rgba(23,37,34,.12);opacity:0;pointer-events:none;transform:translateY(12px);transition:all .18s ease;z-index:30}.player-row:hover .fc-card-preview{opacity:1;transform:translateY(0)}.fc-card-header{font:9px 'DM Mono';letter-spacing:.12em;color:#2d8174;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(23,37,34,.08)}.fc-card-toprow{display:flex;justify-content:space-between;padding:10px 0 12px;color:#172522}.fc-card-ovr,.fc-card-pos{display:flex;flex-direction:column;gap:2px;font:9px 'DM Mono';letter-spacing:.08em;color:var(--muted)}.fc-card-ovr strong,.fc-card-pos strong{font-size:30px;letter-spacing:-.07em;color:var(--ink)}.fc-card-body{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;padding-bottom:8px}.fc-card-figure{height:88px;border-radius:16px;background:linear-gradient(180deg,#d7d9d5,#b9c0bc);display:grid;place-items:center;overflow:hidden}.fc-silhouette{width:100%;height:100%;background:linear-gradient(180deg,#dfe4e0,#b3b8b5);position:relative}.fc-silhouette::before{content:'';position:absolute;left:50%;top:10px;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.38);box-shadow:0 30px 0 8px rgba(255,255,255,.32)}.fc-silhouette.has-image{background-size:cover;background-position:center}.fc-card-meta{display:flex;flex-direction:column;gap:5px;font:10px 'DM Mono';color:#23312d}.fc-card-name{font-size:13px;font-weight:700;letter-spacing:.04em}.fc-card-value,.fc-card-form{color:#3a4c44}.fc-card-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:10px 0 8px;border-top:1px solid rgba(23,37,34,.08);font:10px 'DM Mono';color:#23312d}.fc-card-traits{padding-top:8px;border-top:1px solid rgba(23,37,34,.08);font:9px 'DM Mono';letter-spacing:.04em;color:#2d8174}.google-modal-panel .primary-button{margin-top:18px}.google-modal-panel .auth-note{margin-top:10px}.player-row{position:relative}.player-row .avatar{position:relative}.gtlogin{display:none}
+  </style>
+  <style>
+    .fc-editor{margin:20px 0;padding-top:16px;border-top:1px solid var(--line)}
+    .fc-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+    .fc-editor-grid input{display:block;width:100%;margin-top:6px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px;font:12px 'DM Mono'}
+    .fc-card-preview{position:absolute;right:18px;top:auto;bottom:calc(100% + 10px);width:280px;border-radius:12px;padding:12px 12px 10px;z-index:1000;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .16s ease,transform .16s ease,visibility .16s;background:linear-gradient(145deg,#f9e39b 0%,#dfb84f 38%,#b58625 100%);border:2px solid rgba(87,61,10,.96);box-shadow:0 22px 42px rgba(12,27,22,.38);color:#120d04!important;overflow:hidden}
+    .fc-card-preview:before{content:'';position:absolute;inset:6px;border:1px solid rgba(34,25,10,.38);border-radius:16px;pointer-events:none}
+    .roster-area .player-row:hover{z-index:50}
+    .player-row:hover .fc-card-preview{visibility:visible;opacity:1;transform:translateY(0);pointer-events:auto}
+    .fc-card-header,.fc-card-toprow,.fc-card-body,.fc-card-stats,.fc-card-traits{position:relative}
+    .fc-card-header{font:9px 'DM Mono';letter-spacing:.12em;color:#2d220b;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(24,17,8,.22)}
+    .fc-card-toprow{display:flex;justify-content:space-between;padding:10px 0 12px}
+    .fc-card-ovr,.fc-card-pos{display:flex;flex-direction:column;gap:3px;font:9px 'DM Mono';letter-spacing:.08em;color:#3f2d09}
+    .fc-card-ovr strong,.fc-card-pos strong{font-size:30px;letter-spacing:-.07em;line-height:1;color:#1f160b}
+    .fc-card-body{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;padding-bottom:8px}
+    .fc-card-figure{height:88px;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#d6c48e,#a88b4d);box-shadow:inset 0 0 0 2px rgba(0,0,0,.12)}
+    .fc-silhouette{width:100%;height:100%;position:relative;background:linear-gradient(180deg,#efe3bf,#c9a75a)}
+    .fc-silhouette::before{content:'';position:absolute;left:50%;top:10px;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.35);box-shadow:0 30px 0 8px rgba(255,255,255,.28)}
+    .fc-silhouette.has-image{background-size:cover!important;background-position:center!important}
+    .fc-card-meta{display:flex;flex-direction:column;gap:5px;font:10px 'DM Mono';color:#1d1505}
+    .fc-card-name{font-size:13px;font-weight:700;letter-spacing:.04em}
+    .fc-card-value,.fc-card-form{color:#2f2207}
+    .fc-card-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:10px 0 8px;border-top:1px solid rgba(24,17,8,.22);font:10px 'DM Mono';color:#1d1505}
+    .fc-card-traits{padding-top:8px;border-top:1px solid rgba(24,17,8,.22);font:9px 'DM Mono';letter-spacing:.04em;color:#2f2207}
+    .player-detail-panel{grid-column:1/-1;width:100%;padding:18px 20px;margin-top:8px;border:1px solid rgba(212,166,62,.7);border-radius:4px;background:#fffdf6;color:#18231e}
+    .detail-heading{display:flex;justify-content:space-between;gap:14px;padding-bottom:12px;border-bottom:1px solid #ded7c4;color:#6b592d;font:9px 'DM Mono';letter-spacing:.1em}
+    .detail-columns{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:22px;padding-top:14px}
+    .detail-columns h3{margin:0 0 8px;color:#25453a;font-size:11px;text-transform:uppercase}
+    .detail-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+    .detail-stat{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #ece7da;font:10px 'DM Mono';color:#606860}
+    .detail-stat strong{color:#172522}
+    .position-rankings{min-width:0;padding:20px;background:#173b31;color:#f7f2e8}
+    .position-rank-heading{padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.2)}
+    .position-rank-heading .eyebrow{color:#d4b65e;margin-bottom:8px}
+    .position-rank-heading h2{margin:0;font-size:22px}
+    .position-rank-heading>p:last-child{margin:6px 0 0;color:#c0d0c6;font:9px 'DM Mono';text-transform:uppercase}
+    #positionRankings{max-height:390px;overflow-y:auto;padding-right:5px}
+    .position-rank-group{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.16)}
+    .position-rank-group header{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+    .position-rank-group header strong{color:#e2c56a;font:700 14px 'DM Mono'}
+    .position-rank-group header span{color:#d7e0d9;font-size:10px}
+    .position-rank-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:7px;align-items:center;padding:4px 0;font-size:11px}
+    .position-rank-row>span{color:#b6c7bc;font:9px 'DM Mono'}
+    .position-rank-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+    .position-rank-row b{color:#e2c56a;font:10px 'DM Mono'}
+    @media(max-width:900px){.roster-area{padding:18px}.detail-columns{grid-template-columns:1fr 1fr}.detail-match-column{grid-column:1/-1}}
+    @media(max-width:900px){.feedback-section{grid-template-columns:1fr 1fr}.position-rankings,.feedback-inbox{grid-column:1/-1}}
+    @media(max-width:640px){.position-rankings{margin-top:25px;padding:18px}}
+    @media(max-width:640px){.fc-editor-grid{gap:9px}.fc-editor-grid input{padding:8px 6px}.fc-card-preview{right:-8px;top:18px;width:220px}.fc-card-body{grid-template-columns:72px 1fr}.fc-card-ovr strong,.fc-card-pos strong{font-size:24px}}
+    @media(max-width:640px){.roster-area{padding:12px}.roster-area .player-row{grid-template-columns:28px minmax(130px,1fr) 46px auto;gap:8px;padding:12px 8px}.roster-area .mini-bars,.roster-area .rating{display:none}.roster-area .row-actions{grid-column:4}.fc-card-preview{right:0;top:auto;bottom:calc(100% + 8px);width:min(250px,calc(100vw - 54px))}.player-detail-panel{padding:14px 12px}.detail-columns{grid-template-columns:1fr}.detail-match-column{grid-column:auto}.detail-heading{font-size:8px}}
   </style>
 </head>
 <body>
@@ -109,37 +181,51 @@
 
     <main id="top">
       <section class="hero">
-        <div class="hero-copy"><p class="eyebrow">PLAYER PERFORMANCE CONTROL</p><h1>Rate the role,<br><em>not the stereotype.</em></h1><p class="hero-text">A fairer way to compare your squad. Every overall is shaped by the work that position actually asks for.</p></div>
+        <div class="hero-copy"><p class="eyebrow">MATCHDAY / SQUAD PERFORMANCE</p><h1>Rate the role,<br><em>not the stereotype.</em></h1><p class="hero-text">Track the work behind every result, from the first whistle to the final score. Every role gets judged on what the position demands.</p></div>
         <div class="hero-pulse"><div class="pulse-ring"><span id="heroCount">06</span></div><div><p class="eyebrow">SQUAD SIZE</p><p class="pulse-title">Players tracked</p><p class="pulse-note">Ratings out of 99</p></div></div>
       </section>
 
       <section class="workspace" id="roster">
-        <aside class="editor-panel">
+        <aside class="editor-panel" id="editorPanel">
           <div class="panel-heading"><div><p class="eyebrow">RATING LAB</p><h2 id="formTitle">Add player</h2></div><span class="step-badge">01 / 02</span></div>
           <div id="adminConsole">
           <form id="playerForm">
             <label class="field-label" for="playerName">Player name<input id="playerName" name="name" required maxlength="28" placeholder="e.g. Alex Morgan" /></label>
             <label class="field-label" for="playerPosition">Position<select id="playerPosition" name="position"></select></label>
             <div class="position-note" id="positionNote"></div>
+            <div class="fc-editor">
+              <div class="metric-heading"><span class="field-label">FC card</span><span class="mono">ADMIN EDIT</span></div>
+              <div class="fc-editor-grid">
+                <label class="field-label" for="fcOverall">Overall<input id="fcOverall" type="number" min="45" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcTrait">Trait<input id="fcTrait" maxlength="24" placeholder="Position default" /></label>
+                <label class="field-label" for="fcPassing">PAS<input id="fcPassing" type="number" min="0" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcVision">VIS<input id="fcVision" type="number" min="0" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcControl">CON<input id="fcControl" type="number" min="0" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcDefending">DEF<input id="fcDefending" type="number" min="0" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcPace">PAC<input id="fcPace" type="number" min="0" max="99" placeholder="Auto" /></label>
+                <label class="field-label" for="fcPhysical">PHY<input id="fcPhysical" type="number" min="0" max="99" placeholder="Auto" /></label>
+              </div>
+            </div>
             <div class="metric-heading"><span class="field-label">Position event system</span><span class="mono">ADMIN EDIT</span></div>
             <div class="metric-list" id="metricList"></div>
             <div class="preview-row"><div><span class="eyebrow">POSITION PROFILE</span><strong id="liveOverall">--</strong></div><div class="weight-summary" id="weightSummary"></div></div>
             <button class="primary-button" type="submit"><span id="submitLabel">Add to roster</span><span>↗</span></button>
             <button class="text-button hidden" id="cancelEdit" type="button">Cancel editing</button>
+            <p class="console-copy" id="playerSaveFeedback" role="status" aria-live="polite"></p>
           </form>
           <div class="match-console"><div class="metric-heading"><span class="field-label">Match totals</span><span class="mono">EDITABLE</span></div><div class="match-stat-grid" id="matchStatsList"></div><div class="metric-heading"><span class="field-label">Match update</span><span class="mono">DECIMALS</span></div><p class="console-copy">Apply an event count after a match. Values change behind the scenes in precise increments.</p><form id="matchForm"><label class="field-label" for="matchPlayer">Player<select id="matchPlayer"></select></label><label class="field-label" for="matchEvent">Event<select id="matchEvent"></select></label><label class="field-label" for="matchCount">Count<input id="matchCount" type="number" min="1" max="99" value="1" /></label><button class="primary-button" type="submit">Apply match event <span>↗</span></button><button class="secondary-button" id="resetPlayerStats" type="button">Reset selected player</button><p class="match-feedback" id="matchFeedback"></p></form></div>
           </div>
         </aside>
 
         <div class="roster-area">
-          <div class="roster-heading"><div><p class="eyebrow">THE BOARD</p><h2>Squad rankings</h2></div><div class="board-tools"><label class="search-box"><span>⌕</span><input id="searchInput" placeholder="Find a player" aria-label="Find a player" /></label><select id="filterPosition" aria-label="Filter by position"><option value="ALL">All positions</option></select></div></div>
+          <div class="roster-heading"><div><p class="eyebrow">MATCHDAY / THE SQUAD</p><h2>Squad rankings</h2></div><div class="board-tools"><label class="search-box"><span>⌕</span><input id="searchInput" placeholder="Find a player" aria-label="Find a player" /></label><select id="filterPosition" aria-label="Filter by position"><option value="ALL">All positions</option></select></div></div>
           <div class="leaderboard" id="leaderboard"></div>
           <div class="empty-state hidden" id="emptyState"><span class="empty-number">00</span><h3>No players match this view</h3><p>Try another position or add a new player to the board.</p></div>
           <div class="board-footer"><span><i class="status-dot"></i> Scoring engine live</span><span id="lastUpdated">Updated just now</span></div>
         </div>
       </section>
 
-      <section class="feedback-section" id="feedback"><div class="feedback-copy"><p class="eyebrow">OPEN CHANNEL</p><h2>Spot a mistake?<br><em>Tell the admin.</em></h2><p>Send a correction, missing match stat, or suggestion directly to the person maintaining the board.</p></div><div class="feedback-form-panel"><form id="feedbackForm"><label class="field-label" for="feedbackName">Your name<input id="feedbackName" required placeholder="Your roster name" /></label><label class="field-label" for="feedbackType">Message type<select id="feedbackType"><option>Incorrect stat</option><option>New suggestion</option><option>Account issue</option></select></label><label class="field-label" for="feedbackMessage">Message<textarea id="feedbackMessage" required rows="3" placeholder="What should be corrected?"></textarea></label><button class="primary-button" type="submit">Send to admin <span>↗</span></button><p class="match-feedback" id="feedbackStatus"></p></form></div><div class="feedback-inbox hidden" id="feedbackInbox"><div class="panel-heading"><div><p class="eyebrow">ADMIN INBOX</p><h2>Player feedback</h2></div><span class="step-badge">PRIVATE</span></div><div id="feedbackList"></div></div></section>
+      <section class="feedback-section" id="feedback"><div class="feedback-copy"><p class="eyebrow">OPEN CHANNEL</p><h2>Spot a mistake?<br><em>Tell the admin.</em></h2><p>Send a correction, missing match stat, or suggestion directly to the person maintaining the board.</p></div><div class="feedback-form-panel"><form id="feedbackForm"><label class="field-label" for="feedbackName">Your name<input id="feedbackName" required placeholder="Your roster name" /></label><label class="field-label" for="feedbackType">Message type<select id="feedbackType"><option>Incorrect stat</option><option>New suggestion</option><option>Account issue</option></select></label><label class="field-label" for="feedbackMessage">Message<textarea id="feedbackMessage" required rows="3" placeholder="What should be corrected?"></textarea></label><button class="primary-button" type="submit">Send to admin <span>↗</span></button><p class="match-feedback" id="feedbackStatus"></p></form></div><aside class="position-rankings hidden" id="positionRankingsPanel"><div class="position-rank-heading"><p class="eyebrow">POSITION TABLES</p><h2>Best in each role</h2><p>Ranked by match impact</p></div><div id="positionRankings"></div></aside><div class="feedback-inbox hidden" id="feedbackInbox"><div class="panel-heading"><div><p class="eyebrow">ADMIN INBOX</p><h2>Player feedback</h2></div><span class="step-badge">PRIVATE</span></div><div id="feedbackList"></div></div></section>
 
       <section class="access-section" id="accounts"><div class="access-copy"><p class="eyebrow">PLAYER ACCESS</p><h2>Claim your<br><em>place.</em></h2><p>Players can request the account that matches their roster name. Access stays pending until the admin approves it.</p><button class="google-button" id="googleButton" type="button"><span class="google-mark">G</span> Continue with Google</button><p class="auth-note">Google OAuth needs a server client ID before this can become real sign-in.</p></div><div class="claim-panel" id="claimPanel"><p class="eyebrow">REQUEST ACCESS</p><form id="claimForm"><label class="field-label" for="claimName">Full name<input id="claimName" required placeholder="Enter your roster name" /></label><label class="field-label" for="claimPosition">Position<select id="claimPosition"><option>GK</option><option>CB</option><option>LB</option><option>RB</option><option>CM</option><option>CAM</option><option>CDM</option><option>LW</option><option>RW</option><option>CF</option></select></label><label class="field-label" for="claimEmail">Google email<input id="claimEmail" type="email" placeholder="you@example.com" /></label><button class="primary-button" type="submit">Send claim request <span>↗</span></button><p class="match-feedback" id="claimFeedback"></p></form></div><div class="claims-panel hidden" id="claimsPanel"><div class="panel-heading"><div><p class="eyebrow">ADMIN QUEUE</p><h2>Claim requests</h2></div><span class="step-badge">APPROVAL</span></div><div id="claimList"></div></div></section>
 
@@ -177,6 +263,5 @@
   </div>
 
   <script src="app.js"></script>
->>>>>>> 77cf9df (Add Google sign-in modal and FC hover cards)
 </body>
 </html>
