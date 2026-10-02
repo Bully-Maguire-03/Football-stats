@@ -1,3 +1,83 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Stats</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Settings Button -->
+    <button class="settings-btn" onclick="toggleSettings()">⚙️ Settings</button>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <button class="close-btn" onclick="toggleSettings()">✕</button>
+
+            <!-- Dark/Light Mode Toggle -->
+            <div class="setting-item">
+                <label for="themeToggle">Dark Mode:</label>
+                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            </div>
+
+            <!-- Background Customization -->
+            <div class="setting-item">
+                <label for="bgColor">Background Color:</label>
+                <input type="color" id="bgColor" onchange="changeBackground()">
+            </div>
+
+            <div class="setting-item">
+                <label for="bgImage">Background Image URL:</label>
+                <input type="text" id="bgImage" placeholder="Enter image URL..." onchange="changeBackground()">
+            </div>
+
+            <!-- Music Player Toggle -->
+            <div class="setting-item">
+                <label for="musicToggle">Enable Music Player:</label>
+                <input type="checkbox" id="musicToggle" onchange="toggleMusicPlayer()">
+            </div>
+
+            <div class="setting-item">
+                <label for="musicUrl">Music URL:</label>
+                <input type="text" id="musicUrl" placeholder="Enter music file URL...">
+            </div>
+
+            <button onclick="loadMusic()" class="load-music-btn">Load Music</button>
+        </div>
+    </div>
+
+    <!-- Music Player -->
+    <div class="music-player" id="musicPlayer" style="display: none;">
+        <div class="player-controls">
+            <button onclick="playPauseMusic()">▶️ Play</button>
+            <button onclick="stopMusic()">⏹️ Stop</button>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume()">
+            <span id="musicTitle">No Music Loaded</span>
+        </div>
+        <audio id="audioPlayer"></audio>
+    </div>
+
+    <!-- Top Stats Column (Placeholder for your data) -->
+    <div class="top-column">
+        <h3>Stats Overview</h3>
+        <div id="topColumnContent">
+            <p>Add your stats here</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="columns-container" id="columnsContainer">
+            <!-- Columns will be added dynamically here -->
+        </div>
+        <button class="add-column-btn" onclick="addColumn()">+ Add Column</button>
+    </div>
+
+    <script src="script.js"></script>
+=======
 <!doctype html>
 <html lang="en">
 <head>
@@ -16,15 +96,15 @@
     .delta-table-section{padding:85px 0 90px;border-top:1px solid var(--line)}.delta-table-wrap{overflow-x:auto}.delta-table{width:100%;border-collapse:collapse;font-size:12px}.delta-table th,.delta-table td{border-bottom:1px solid var(--line);padding:13px 15px;text-align:right}.delta-table th:first-child,.delta-table td:first-child{text-align:left}.delta-table th{font:9px 'DM Mono';letter-spacing:.08em;color:var(--muted);text-transform:uppercase}.delta-table td{font:12px 'DM Mono'}.delta-table .positive{color:var(--teal)}.delta-table .negative{color:var(--coral)}.rating small,.top-ten-card b small{display:block;color:var(--muted);font:8px 'DM Mono';letter-spacing:.05em;text-align:right}.top-ten-card b small{color:#b9d8ca}
   </style>
   <style>
-    .account-chip{display:flex;align-items:center;gap:7px;color:var(--teal);font:9px 'DM Mono';letter-spacing:.05em}.account-dot{display:block;width:7px;height:7px;background:#75c98b;border-radius:50%}.player-row{position:relative}.player-row.featured{background:rgba(199,243,107,.13);border-left:3px solid var(--lime);padding-left:10px}.player-row.featured:before{content:'TOP 10';font:8px 'DM Mono';color:var(--teal);position:absolute;right:82px;top:8px}
+    .account-chip{display:flex;align-items:center;gap:7px;color:var(--teal);font:9px 'DM Mono';letter-spacing:.05em}.account-dot{display:block;width:7px;height:7px;background:#75c98b;border-radius:50%}.player-row{position:relative}.player-row.featured{background:rgba(199,243,107,.13);border-left:3px solid var(--lime);padding-left:10px}.player-row.featured:before{content:'TOP 10';font:8px 'DM Mono';color:var(--teal);position:absolute;right:82px;top:8px}.google-top-button{display:inline-flex;align-items:center;gap:8px;border:1px solid #dfe6df;background:#fff;color:var(--ink);padding:8px 14px;border-radius:999px;font:10px 'DM Mono';letter-spacing:.08em;cursor:pointer}.google-mark{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e5f0ff;color:#0d6efd;font-weight:700}.google-modal{position:fixed;inset:0;background:rgba(18,30,25,.55);display:grid;place-items:center;z-index:200}.google-modal.hidden{display:none}.google-modal-panel{position:relative;width:min(440px,calc(100vw - 24px));background:#fff;border:1px solid var(--line);border-radius:28px;padding:28px 24px 22px;box-shadow:0 28px 60px rgba(18,30,25,.18)}.google-modal-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}.google-badge{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#fff,#edf2ff)}.google-modal-panel h3{margin:6px 0 0;font-size:28px;letter-spacing:-.06em}.field-block{margin-top:14px}.field-block input,.field-block select{width:100%;border:1px solid #d7dfd8;border-radius:12px;padding:12px 13px;background:#f7faf6;color:var(--ink)}.modal-close{position:absolute;top:16px;right:16px;border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer}.avatar-preview{height:84px;display:grid;place-items:center;margin:18px 0 14px;border:1px dashed #d7dfd8;border-radius:18px;background:#f8faf7}.avatar-preview img{width:62px;height:62px;border-radius:50%;object-fit:cover}.avatar-silhouette{font-size:30px}.fc-card-preview{position:absolute;right:-18px;top:22px;width:260px;background:linear-gradient(180deg,#f9fbf7,#edf3ee);border:1px solid rgba(23,37,34,.12);border-radius:20px;padding:12px 12px 10px;box-shadow:0 18px 32px rgba(23,37,34,.12);opacity:0;pointer-events:none;transform:translateY(12px);transition:all .18s ease;z-index:30}.player-row:hover .fc-card-preview{opacity:1;transform:translateY(0)}.fc-card-header{font:9px 'DM Mono';letter-spacing:.12em;color:#2d8174;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(23,37,34,.08)}.fc-card-toprow{display:flex;justify-content:space-between;padding:10px 0 12px;color:#172522}.fc-card-ovr,.fc-card-pos{display:flex;flex-direction:column;gap:2px;font:9px 'DM Mono';letter-spacing:.08em;color:var(--muted)}.fc-card-ovr strong,.fc-card-pos strong{font-size:30px;letter-spacing:-.07em;color:var(--ink)}.fc-card-body{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;padding-bottom:8px}.fc-card-figure{height:88px;border-radius:16px;background:linear-gradient(180deg,#d7d9d5,#b9c0bc);display:grid;place-items:center;overflow:hidden}.fc-silhouette{width:100%;height:100%;background:linear-gradient(180deg,#dfe4e0,#b3b8b5);position:relative}.fc-silhouette::before{content:'';position:absolute;left:50%;top:10px;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.38);box-shadow:0 30px 0 8px rgba(255,255,255,.32)}.fc-silhouette.has-image{background-size:cover;background-position:center}.fc-card-meta{display:flex;flex-direction:column;gap:5px;font:10px 'DM Mono';color:#23312d}.fc-card-name{font-size:13px;font-weight:700;letter-spacing:.04em}.fc-card-value,.fc-card-form{color:#3a4c44}.fc-card-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;padding:10px 0 8px;border-top:1px solid rgba(23,37,34,.08);font:10px 'DM Mono';color:#23312d}.fc-card-traits{padding-top:8px;border-top:1px solid rgba(23,37,34,.08);font:9px 'DM Mono';letter-spacing:.04em;color:#2d8174}.google-modal-panel .primary-button{margin-top:18px}.google-modal-panel .auth-note{margin-top:10px}.player-row{position:relative}.player-row .avatar{position:relative}.gtlogin{display:none}
   </style>
 </head>
 <body>
   <div class="page-shell">
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Pitchboard home"><span class="brand-mark">P</span><span>PITCHBOARD</span></a>
-      <nav class="topnav" aria-label="Primary navigation"><a class="active" href="#roster">Roster</a><a href="#method">Method</a></nav>
-      <div class="top-actions"><span class="season-label">CLASS LEAGUE / 2024-25</span><span class="account-chip"><span class="account-dot"></span><span id="authStatus">SIGNED IN / ADMIN</span></span><button class="small-button" id="authButton">Preview player view</button><button class="icon-button" id="resetData" title="Reset sample roster" aria-label="Reset sample roster">↺</button></div>
+      <nav class="topnav" aria-label="Primary navigation"><a class="active" href="#roster">Roster</a><a href="#method">Method</a><a href="#feedback">Suggestions</a></nav>
+      <div class="top-actions"><span class="season-label">CLASS LEAGUE / 2024-25</span><span class="account-chip"><span class="account-dot"></span><span id="authStatus">SIGNED IN / ADMIN</span></span><button class="google-top-button" id="topGoogleButton" type="button"><span class="google-mark">G</span> Sign in</button><button class="small-button" id="authButton">Preview player view</button><button class="icon-button" id="resetData" title="Reset sample roster" aria-label="Reset sample roster">↺</button></div>
     </header>
 
     <main id="top">
@@ -68,6 +148,35 @@
     </main>
     <footer><span>PITCHBOARD / A SMALLER, FAIRER SCOUTING TOOL</span><span>Built for the beautiful game</span></footer>
   </div>
+  <div class="google-modal hidden" id="googleModal" aria-modal="true" role="dialog" aria-label="Google sign in">
+    <div class="google-modal-panel">
+      <button class="modal-close" id="closeGoogleModal" type="button" aria-label="Close sign in">✕</button>
+      <div class="google-modal-header">
+        <div class="google-badge"><span class="google-mark">G</span></div>
+        <div>
+          <p class="eyebrow">SECURE ACCESS</p>
+          <h3>Sign in with Google</h3>
+        </div>
+      </div>
+      <div class="field-block">
+        <label class="field-label" for="googleEmailInput">Google email</label>
+        <input id="googleEmailInput" type="email" value="mohammedakhsar2020@gmail.com" placeholder="you@example.com" />
+      </div>
+      <div class="field-block">
+        <label class="field-label" for="googlePlayerSelect">Select roster identity</label>
+        <select id="googlePlayerSelect"></select>
+      </div>
+      <div class="field-block">
+        <label class="field-label" for="googleAvatarInput">Profile picture</label>
+        <input id="googleAvatarInput" type="file" accept="image/*" />
+      </div>
+      <div class="avatar-preview" id="googleAvatarPreview"><span class="avatar-silhouette">👤</span></div>
+      <button class="primary-button" id="continueGoogleButton" type="button">Continue to board <span>↗</span></button>
+      <p class="auth-note" id="googleModalMessage">Use the registered admin email to unlock admin controls.</p>
+    </div>
+  </div>
+
   <script src="app.js"></script>
+>>>>>>> 77cf9df (Add Google sign-in modal and FC hover cards)
 </body>
 </html>

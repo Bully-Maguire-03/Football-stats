@@ -52,9 +52,130 @@ function withStats(player) { return { ...player, stats: player.stats || { shooti
 let players = (JSON.parse(localStorage.getItem(ROSTER_KEY) || 'null') || STARTER).map(withStats);
 let claims = JSON.parse(localStorage.getItem(CLAIMS_KEY) || 'null') || [];
 let editingId = null;
+const ADMIN_EMAIL = 'mohammedakhsar2020@gmail.com';
+const AUTH_KEY = 'pitchboard-auth-v1';
+const PROFILE_KEY = 'pitchboard-user-profile-v1';
 let role = sessionStorage.getItem('pitchboard-role') || 'admin';
+let currentUser = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null') || { email: ADMIN_EMAIL, name: 'Mohammed Akhsar', role: 'admin', playerId: null, avatar: '' };
 const positionSelect = $('#playerPosition');
 const filterPosition = $('#filterPosition');
+
+function normalizeEmail(value) { return String(value || '').trim().toLowerCase(); }
+function persistAuth(authData) { currentUser = authData; localStorage.setItem(AUTH_KEY, JSON.stringify(authData)); sessionStorage.setItem('pitchboard-role', authData.role); role = authData.role; }
+function applyAuthState(authData = currentUser) {
+  const nextRole = authData?.role || 'admin';
+  role = nextRole;
+  sessionStorage.setItem('pitchboard-role', nextRole);
+  $('#authStatus').textContent = nextRole === 'admin' ? 'SIGNED IN / ADMIN' : `SIGNED IN / ${String(authData?.name || 'PLAYER').toUpperCase()}`;
+  $('#authButton').textContent = nextRole === 'admin' ? 'Preview player view' : 'Return to admin';
+  $('#adminConsole').classList.toggle('hidden', nextRole !== 'admin');
+  $('#claimPanel').classList.toggle('hidden', nextRole === 'admin');
+  $('#claimsPanel').classList.toggle('hidden', nextRole !== 'admin');
+  $('#feedbackInbox').classList.toggle('hidden', nextRole !== 'admin');
+  if (nextRole === 'admin' && authData?.email === ADMIN_EMAIL) {
+    $('#claimFeedback').textContent = `Admin access granted to ${authData.email}.`;
+  }
+}
+function setGoogleAvatarPreview(file) {
+  const preview = $('#googleAvatarPreview');
+  if (!file) {
+    preview.innerHTML = '<span class="avatar-silhouette">👤</span>';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    preview.innerHTML = `<img src="${event.target.result}" alt="Selected avatar preview" />`;
+  };
+  reader.readAsDataURL(file);
+}
+function populateGooglePlayerOptions() {
+  const select = $('#googlePlayerSelect');
+  if (!select) return;
+  select.innerHTML = players.map(player => `<option value="${player.id}">${player.name} / ${player.position}</option>`).join('');
+}
+function openGoogleModal() {
+  const modal = $('#googleModal');
+  const emailInput = $('#googleEmailInput');
+  if (emailInput) emailInput.value = currentUser?.email || ADMIN_EMAIL;
+  populateGooglePlayerOptions();
+  modal.classList.remove('hidden');
+}
+function closeGoogleModal() {
+  $('#googleModal').classList.add('hidden');
+  $('#googleModalMessage').textContent = 'Use the registered admin email to unlock admin controls.';
+  $('#googleAvatarInput').value = '';
+  setGoogleAvatarPreview(null);
+}
+function calculateOverall(player) {
+  const baseStats = player.stats || { shooting: 0, passing: 0, dribbling: 0, defending: 0, physical: 0, pace: 0 };
+  const weights = WEIGHTS[POSITION_GROUP[player.position]] || { shooting: 0.2, passing: 0.2, dribbling: 0.2, defending: 0.2, physical: 0.1, pace: 0.1 };
+  const total = Object.entries(weights).reduce((sum, [key, weight]) => sum + (baseStats[key] || 0) * weight, 0);
+  return Math.max(45, Math.min(99, Math.round(total)));
+}
+function buildPreviewCard(player) {
+  const data = POSITION_DATA[player.position];
+  const avatar = getStoredProfile(player.id)?.avatar || '';
+  const overall = calculateOverall(player);
+  const statMap = { PASS: player.stats?.passing || 0, VIS: player.stats?.pace || 0, CON: player.stats?.dribbling || 0, DEF: player.stats?.defending || 0, PAC: player.stats?.pace || 0, PHY: player.stats?.physical || 0 };
+  const formDelta = Math.max(-4, Math.min(9, Math.round(impactScore(player) / 4)));
+  const formText = `${formDelta >= 0 ? '+' : ''}${formDelta}`;
+  const trait = positionTrait(player.position);
+  const value = `$${((player.points || 5) * 4.2).toFixed(1)}M`;
+  return `
+    <div class="fc-card-preview">
+      <div class="fc-card-header"><span>⚡ IN-FORM</span></div>
+      <div class="fc-card-toprow">
+        <div class="fc-card-ovr"><span>OVR</span><strong>${overall}</strong></div>
+        <div class="fc-card-pos"><span>POS</span><strong>${player.position}</strong></div>
+      </div>
+      <div class="fc-card-body">
+        <div class="fc-card-figure">
+          <div class="fc-silhouette ${avatar ? 'has-image' : ''}" style="${avatar ? `background-image:url('${avatar}')` : ''}"></div>
+        </div>
+        <div class="fc-card-meta">
+          <div class="fc-card-name">${player.name.toUpperCase()}</div>
+          <div class="fc-card-value">VALUE: ${value}</div>
+          <div class="fc-card-form">FORM: ${formDelta >= 0 ? '⬆️' : '⬇️'} (${formText})</div>
+        </div>
+      </div>
+      <div class="fc-card-stats">
+        <span>${Math.round(statMap.PASS)} PAS</span>
+        <span>${Math.round(statMap.VIS)} VIS</span>
+        <span>${Math.round(statMap.CON)} CON</span>
+        <span>${Math.round(statMap.DEF)} DEF</span>
+        <span>${Math.round(statMap.PAC)} PAC</span>
+        <span>${Math.round(statMap.PHY)} PHY</span>
+      </div>
+      <div class="fc-card-traits">🏆 TRAITS: [${trait}]</div>
+    </div>
+  `;
+}
+function positionTrait(position) {
+  const traitMap = { GK: 'Shot-stopper', CB: 'Leader', LB: 'Runner', RB: 'Runner', CM: 'Playmaker', CAM: 'Creator', CDM: 'Shield', LW: 'Winger', RW: 'Winger', CF: 'Finisher' };
+  return traitMap[position] || 'Leader';
+}
+function getStoredProfile(playerId = null) {
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  if (playerId !== null && profiles[playerId]) return profiles[playerId];
+  return currentUser?.avatar ? { avatar: currentUser.avatar } : null;
+}
+function saveProfileData(profile) {
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  if (profile.playerId) profiles[profile.playerId] = { avatar: profile.avatar, name: profile.name, email: profile.email };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+}
+
+function applySavedAuth() {
+  const saved = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
+  if (saved) {
+    currentUser = saved;
+    applyAuthState(saved);
+  } else {
+    currentUser = { email: ADMIN_EMAIL, name: 'Mohammed Akhsar', role: 'admin', playerId: null, avatar: '' };
+    persistAuth(currentUser);
+    applyAuthState(currentUser);
+  }
+}
 Object.entries(POSITION_DATA).forEach(([key, data]) => {
   positionSelect.insertAdjacentHTML('beforeend', `<option value="${key}">${key} / ${data.label}</option>`);
   filterPosition.insertAdjacentHTML('beforeend', `<option value="${key}">${key}</option>`);
@@ -77,7 +198,14 @@ function renderBoard() {
   const search = $('#searchInput').value.toLowerCase(); const filter = filterPosition.value;
   const visible = players.filter(player => player.name.toLowerCase().includes(search) && (filter === 'ALL' || player.position === filter)).sort((a, b) => impactScore(b) - impactScore(a));
   const featuredIds = new Set([...players].sort((a, b) => impactScore(b) - impactScore(a)).slice(0, 10).map(player => player.id));
-  $('#leaderboard').innerHTML = visible.map((player, index) => { const data = POSITION_DATA[player.position]; const bars = Object.keys(MATCH_EVENTS).slice(0, 6).map(eventKey => `<i style="height:${Math.max(4, Math.min(30, player.matchStats[eventKey] * 2))}px;background:${data.color}"></i>`).join(''); const actions = role === 'admin' ? `<button class="row-action" title="Edit player" data-action="edit" data-id="${player.id}">✎</button><button class="row-action" title="Delete player" data-action="delete" data-id="${player.id}">×</button>` : '<span class="player-lock">view only</span>'; const totalLine = `Goals ${player.matchStats.goal || 0} / Assists ${player.matchStats.assist || 0} / Chances ${player.matchStats.keyPass || 0}`; return `<article class="player-row${featuredIds.has(player.id) ? ' featured' : ''}"><span class="player-rank">${String(index + 1).padStart(2, '0')}</span><div class="player-info"><span class="avatar" style="background:${data.color}">${initials(player.name)}</span><div><div class="player-name">${player.name}</div><div class="player-position">${data.label}</div><div class="player-totals">${totalLine}</div></div></div><span class="tag">${player.position}</span><div class="mini-bars" aria-label="${player.name} match profile">${bars}</div><strong class="rating"><small>IMPACT</small>${impactScore(player).toFixed(2)}</strong><div class="row-actions">${actions}</div></article>`; }).join('');
+  $('#leaderboard').innerHTML = visible.map((player, index) => {
+    const data = POSITION_DATA[player.position];
+    const bars = Object.keys(MATCH_EVENTS).slice(0, 6).map(eventKey => `<i style="height:${Math.max(4, Math.min(30, player.matchStats[eventKey] * 2))}px;background:${data.color}"></i>`).join('');
+    const actions = role === 'admin' ? `<button class="row-action" title="Edit player" data-action="edit" data-id="${player.id}">✎</button><button class="row-action" title="Delete player" data-action="delete" data-id="${player.id}">×</button>` : '<span class="player-lock">view only</span>';
+    const totalLine = `Goals ${player.matchStats.goal || 0} / Assists ${player.matchStats.assist || 0} / Chances ${player.matchStats.keyPass || 0}`;
+    const avatar = getStoredProfile(player.id)?.avatar || '';
+    return `<article class="player-row${featuredIds.has(player.id) ? ' featured' : ''}"><span class="player-rank">${String(index + 1).padStart(2, '0')}</span><div class="player-info"><span class="avatar" style="background:${data.color};${avatar ? `background-image:url('${avatar}');background-size:cover;background-position:center;` : ''}">${avatar ? '' : initials(player.name)}</span><div><div class="player-name">${player.name}</div><div class="player-position">${data.label}</div><div class="player-totals">${totalLine}</div></div></div><span class="tag">${player.position}</span><div class="mini-bars" aria-label="${player.name} match profile">${bars}</div><strong class="rating"><small>IMPACT</small>${impactScore(player).toFixed(2)}</strong><div class="row-actions">${actions}</div>${buildPreviewCard(player)}</article>`;
+  }).join('');
   $('#emptyState').classList.toggle('hidden', visible.length > 0); $('#heroCount').textContent = String(players.length).padStart(2, '0');
   $('#lastUpdated').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
@@ -95,12 +223,35 @@ $('#resetPlayerStats').addEventListener('click', () => { if (role !== 'admin') r
 $('#resetData').addEventListener('click', () => { players = STARTER.map(withStats); localStorage.setItem(ROSTER_KEY, JSON.stringify(players)); resetForm(); renderBoard(); $('#matchPlayer').innerHTML = players.map(player => `<option value="${player.id}">${player.name} / ${player.position}</option>`).join(''); });
 $('#authButton').addEventListener('click', () => { role = role === 'admin' ? 'player' : 'admin'; sessionStorage.setItem('pitchboard-role', role); $('#authStatus').textContent = role === 'admin' ? 'SIGNED IN / ADMIN' : 'PLAYER VIEW'; $('#authButton').textContent = role === 'admin' ? 'Preview player view' : 'Return to admin'; $('#adminConsole').classList.toggle('hidden', role !== 'admin'); $('#claimPanel').classList.toggle('hidden', role === 'admin'); $('#claimsPanel').classList.toggle('hidden', role !== 'admin'); $('#feedbackInbox').classList.toggle('hidden', role !== 'admin'); renderBoard(); });
 $('#claimForm').addEventListener('submit', event => { event.preventDefault(); const request = { id: Date.now(), name: $('#claimName').value.trim(), position: $('#claimPosition').value, email: $('#claimEmail').value.trim() }; const requests = JSON.parse(localStorage.getItem('pitchboard-claims-v1') || '[]'); requests.push(request); localStorage.setItem('pitchboard-claims-v1', JSON.stringify(requests)); $('#claimForm').reset(); $('#claimFeedback').textContent = 'Request sent. Your admin must approve access.'; });
-$('#googleButton').addEventListener('click', () => { $('#claimFeedback').textContent = 'Google sign-in needs a server OAuth client ID. The claim form is ready for that connection.'; });
+$('#topGoogleButton').addEventListener('click', openGoogleModal);
+$('#closeGoogleModal').addEventListener('click', closeGoogleModal);
+$('#googleButton').addEventListener('click', openGoogleModal);
+$('#googleAvatarInput').addEventListener('change', (event) => setGoogleAvatarPreview(event.target.files?.[0] || null));
+$('#continueGoogleButton').addEventListener('click', () => {
+  const email = normalizeEmail($('#googleEmailInput').value);
+  const playerId = Number($('#googlePlayerSelect').value);
+  const avatar = $('#googleAvatarPreview').querySelector('img')?.src || '';
+  const selectedPlayer = players.find(player => player.id === playerId) || players[0];
+
+  if (!email) {
+    $('#googleModalMessage').textContent = 'Please enter a valid Google email to continue.';
+    return;
+  }
+
+  const nextUser = email === ADMIN_EMAIL
+    ? { email, name: 'Mohammed Akhsar', role: 'admin', playerId: null, avatar }
+    : { email, name: selectedPlayer?.name || 'Player', role: 'player', playerId: selectedPlayer?.id || null, avatar };
+
+  persistAuth(nextUser);
+  saveProfileData({ playerId: nextUser.playerId, avatar: nextUser.avatar, name: nextUser.name, email: nextUser.email });
+  applyAuthState(nextUser);
+  closeGoogleModal();
+  renderBoard();
+  $('#claimFeedback').textContent = `Signed in as ${nextUser.name} (${nextUser.email}).`;
+});
 function renderFeedback() { const feedback = JSON.parse(localStorage.getItem('pitchboard-feedback-v1') || '[]'); $('#feedbackList').innerHTML = feedback.length ? feedback.map(item => `<div class="claim-row"><div><strong>${item.name} / ${item.type}</strong><span>${item.message}</span></div><button class="small-button" data-feedback="clear" data-id="${item.id}">Clear</button></div>`).join('') : '<p class="muted-copy">No player suggestions yet.</p>'; }
 $('#feedbackForm').addEventListener('submit', event => { event.preventDefault(); const feedback = JSON.parse(localStorage.getItem('pitchboard-feedback-v1') || '[]'); feedback.push({ id: Date.now(), name: $('#feedbackName').value.trim(), type: $('#feedbackType').value, message: $('#feedbackMessage').value.trim() }); localStorage.setItem('pitchboard-feedback-v1', JSON.stringify(feedback)); $('#feedbackForm').reset(); $('#feedbackStatus').textContent = 'Sent to the admin inbox.'; renderFeedback(); });
 $('#feedbackList').addEventListener('click', event => { const button = event.target.closest('[data-feedback]'); if (!button) return; const feedback = JSON.parse(localStorage.getItem('pitchboard-feedback-v1') || '[]').filter(item => item.id !== Number(button.dataset.id)); localStorage.setItem('pitchboard-feedback-v1', JSON.stringify(feedback)); renderFeedback(); });
 function renderClaims() { const requests = JSON.parse(localStorage.getItem(CLAIMS_KEY) || '[]'); $('#claimList').innerHTML = requests.length ? requests.map(request => `<div class="claim-row"><div><strong>${request.name}</strong><span>${request.email || 'Google account pending'} / ${request.position}</span></div><div class="claim-actions"><button class="small-button" data-claim="approve" data-id="${request.id}">Approve</button><button class="small-button ghost" data-claim="deny" data-id="${request.id}">Deny</button></div></div>`).join('') : '<p class="muted-copy">No pending account claims.</p>'; }
 $('#claimList').addEventListener('click', event => { const button = event.target.closest('[data-claim]'); if (!button) return; const requests = JSON.parse(localStorage.getItem(CLAIMS_KEY) || '[]').filter(request => request.id !== Number(button.dataset.id)); localStorage.setItem(CLAIMS_KEY, JSON.stringify(requests)); renderClaims(); });
-positionSelect.value = 'CF'; $('#matchPlayer').innerHTML = players.map(player => `<option value="${player.id}">${player.name} / ${player.position}</option>`).join(''); populateEventOptions(players[0].position); renderMetrics(); renderMatchStats(); renderBoard(); renderMethod(); renderDeltaTable(); $('#adminConsole').classList.toggle('hidden', role !== 'admin'); $('#claimPanel').classList.toggle('hidden', role === 'admin'); $('#claimsPanel').classList.toggle('hidden', role !== 'admin'); $('#feedbackInbox').classList.toggle('hidden', role !== 'admin'); $('#authStatus').textContent = role === 'admin' ? 'SIGNED IN / ADMIN' : 'PLAYER VIEW';
-renderClaims();
-renderFeedback();
+positionSelect.value = 'CF'; $('#matchPlayer').innerHTML = players.map(player => `<option value="${player.id}">${player.name} / ${player.position}</option>`).join(''); populateEventOptions(players[0].position); renderMetrics(); renderMatchStats(); renderBoard(); renderMethod(); renderDeltaTable(); applySavedAuth(); populateGooglePlayerOptions(); renderClaims(); renderFeedback();
