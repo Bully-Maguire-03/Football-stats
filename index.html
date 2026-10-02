@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pitchboard | Position-aware player ratings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .auth-status{font-family:'DM Mono';font-size:9px;color:var(--teal);letter-spacing:.08em}.small-button{border:1px solid var(--line);background:transparent;color:inherit;padding:7px 10px;font-size:10px;cursor:pointer}.small-button.ghost{color:var(--muted)}.console-copy,.auth-note,.muted-copy{font-size:11px;line-height:1.5;color:var(--muted)}.match-console{border-top:1px solid #394641;margin-top:24px;padding-top:4px}.match-feedback{font-size:10px;line-height:1.4;color:var(--lime);min-height:14px}.match-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:12px}.compact-field{font-family:'DM Mono';font-size:8px;color:#8fa098}.compact-field input{display:block;width:100%;border:0;border-bottom:1px solid #46534e;background:transparent;color:var(--lime);padding:6px 0;font:11px 'DM Mono'}.secondary-button{width:100%;border:1px solid #536159;background:transparent;color:#b5c3bb;padding:10px 12px;margin-top:8px;font-size:10px;cursor:pointer}.feedback-section{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:44px;padding:85px 0 70px;border-top:1px solid var(--line)}.feedback-copy h2{font-size:43px;line-height:.95;letter-spacing:-.06em;margin:0}.feedback-copy h2 em{font-style:normal;color:var(--coral)}.feedback-copy>p:not(.eyebrow){max-width:290px;color:var(--muted);font-size:13px;line-height:1.6}.feedback-form-panel{background:#e8f0e3;padding:24px}.feedback-form-panel textarea{display:block;width:100%;resize:vertical;border:1px solid #b8c5b7;background:transparent;color:var(--ink);padding:8px;margin-top:7px;font:12px 'Space Grotesk'}.feedback-form-panel .field-label{margin-top:14px}.feedback-form-panel .primary-button{margin-top:18px}.feedback-inbox{padding:24px;background:var(--ink);color:white}.feedback-inbox .eyebrow{color:var(--lime)}.feedback-inbox .claim-row{border-color:#3c4843}.feedback-inbox .claim-row span{max-width:190px;line-height:1.4}.feedback-inbox .small-button{color:var(--lime);border-color:#52634f}.rating small,.top-ten-card b small{display:block;color:var(--muted);font:8px 'DM Mono';letter-spacing:.05em;text-align:right}.top-ten-card b small{color:#b9d8ca}
+    @media(max-width:900px){.access-section,.feedback-section{grid-template-columns:1fr 1fr}.claims-panel,.feedback-inbox{grid-column:1/-1}.top-ten-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.top-actions .auth-status{display:none}.access-section,.feedback-section{display:block}.claim-panel,.claims-panel,.feedback-form-panel,.feedback-inbox{margin-top:25px}.top-ten-heading{display:block}.top-ten-heading>.mono{display:block;margin-top:12px}.top-ten-grid{grid-template-columns:1fr 1fr}.top-ten-card{min-height:105px;padding:12px}.player-statline{max-width:190px}}
+  </style>
+  <style>
+    .delta-table-section{padding:85px 0 90px;border-top:1px solid var(--line)}.delta-table-wrap{overflow-x:auto}.delta-table{width:100%;border-collapse:collapse;font-size:12px}.delta-table th,.delta-table td{border-bottom:1px solid var(--line);padding:13px 15px;text-align:right}.delta-table th:first-child,.delta-table td:first-child{text-align:left}.delta-table th{font:9px 'DM Mono';letter-spacing:.08em;color:var(--muted);text-transform:uppercase}.delta-table td{font:12px 'DM Mono'}.delta-table .positive{color:var(--teal)}.delta-table .negative{color:var(--coral)}.rating small,.top-ten-card b small{display:block;color:var(--muted);font:8px 'DM Mono';letter-spacing:.05em;text-align:right}.top-ten-card b small{color:#b9d8ca}
+  </style>
+  <style>
+    .account-chip{display:flex;align-items:center;gap:7px;color:var(--teal);font:9px 'DM Mono';letter-spacing:.05em}.account-dot{display:block;width:7px;height:7px;background:#75c98b;border-radius:50%}.player-row{position:relative}.player-row.featured{background:rgba(199,243,107,.13);border-left:3px solid var(--lime);padding-left:10px}.player-row.featured:before{content:'TOP 10';font:8px 'DM Mono';color:var(--teal);position:absolute;right:82px;top:8px}
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Pitchboard home"><span class="brand-mark">P</span><span>PITCHBOARD</span></a>
+      <nav class="topnav" aria-label="Primary navigation"><a class="active" href="#roster">Roster</a><a href="#method">Method</a></nav>
+      <div class="top-actions"><span class="season-label">CLASS LEAGUE / 2024-25</span><span class="account-chip"><span class="account-dot"></span><span id="authStatus">SIGNED IN / ADMIN</span></span><button class="small-button" id="authButton">Preview player view</button><button class="icon-button" id="resetData" title="Reset sample roster" aria-label="Reset sample roster">↺</button></div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy"><p class="eyebrow">PLAYER PERFORMANCE CONTROL</p><h1>Rate the role,<br><em>not the stereotype.</em></h1><p class="hero-text">A fairer way to compare your squad. Every overall is shaped by the work that position actually asks for.</p></div>
+        <div class="hero-pulse"><div class="pulse-ring"><span id="heroCount">06</span></div><div><p class="eyebrow">SQUAD SIZE</p><p class="pulse-title">Players tracked</p><p class="pulse-note">Ratings out of 99</p></div></div>
+      </section>
+
+      <section class="workspace" id="roster">
+        <aside class="editor-panel">
+          <div class="panel-heading"><div><p class="eyebrow">RATING LAB</p><h2 id="formTitle">Add player</h2></div><span class="step-badge">01 / 02</span></div>
+          <div id="adminConsole">
+          <form id="playerForm">
+            <label class="field-label" for="playerName">Player name<input id="playerName" name="name" required maxlength="28" placeholder="e.g. Alex Morgan" /></label>
+            <label class="field-label" for="playerPosition">Position<select id="playerPosition" name="position"></select></label>
+            <div class="position-note" id="positionNote"></div>
+            <div class="metric-heading"><span class="field-label">Position event system</span><span class="mono">ADMIN EDIT</span></div>
+            <div class="metric-list" id="metricList"></div>
+            <div class="preview-row"><div><span class="eyebrow">POSITION PROFILE</span><strong id="liveOverall">--</strong></div><div class="weight-summary" id="weightSummary"></div></div>
+            <button class="primary-button" type="submit"><span id="submitLabel">Add to roster</span><span>↗</span></button>
+            <button class="text-button hidden" id="cancelEdit" type="button">Cancel editing</button>
+          </form>
+          <div class="match-console"><div class="metric-heading"><span class="field-label">Match totals</span><span class="mono">EDITABLE</span></div><div class="match-stat-grid" id="matchStatsList"></div><div class="metric-heading"><span class="field-label">Match update</span><span class="mono">DECIMALS</span></div><p class="console-copy">Apply an event count after a match. Values change behind the scenes in precise increments.</p><form id="matchForm"><label class="field-label" for="matchPlayer">Player<select id="matchPlayer"></select></label><label class="field-label" for="matchEvent">Event<select id="matchEvent"></select></label><label class="field-label" for="matchCount">Count<input id="matchCount" type="number" min="1" max="99" value="1" /></label><button class="primary-button" type="submit">Apply match event <span>↗</span></button><button class="secondary-button" id="resetPlayerStats" type="button">Reset selected player</button><p class="match-feedback" id="matchFeedback"></p></form></div>
+          </div>
+        </aside>
+
+        <div class="roster-area">
+          <div class="roster-heading"><div><p class="eyebrow">THE BOARD</p><h2>Squad rankings</h2></div><div class="board-tools"><label class="search-box"><span>⌕</span><input id="searchInput" placeholder="Find a player" aria-label="Find a player" /></label><select id="filterPosition" aria-label="Filter by position"><option value="ALL">All positions</option></select></div></div>
+          <div class="leaderboard" id="leaderboard"></div>
+          <div class="empty-state hidden" id="emptyState"><span class="empty-number">00</span><h3>No players match this view</h3><p>Try another position or add a new player to the board.</p></div>
+          <div class="board-footer"><span><i class="status-dot"></i> Scoring engine live</span><span id="lastUpdated">Updated just now</span></div>
+        </div>
+      </section>
+
+      <section class="feedback-section" id="feedback"><div class="feedback-copy"><p class="eyebrow">OPEN CHANNEL</p><h2>Spot a mistake?<br><em>Tell the admin.</em></h2><p>Send a correction, missing match stat, or suggestion directly to the person maintaining the board.</p></div><div class="feedback-form-panel"><form id="feedbackForm"><label class="field-label" for="feedbackName">Your name<input id="feedbackName" required placeholder="Your roster name" /></label><label class="field-label" for="feedbackType">Message type<select id="feedbackType"><option>Incorrect stat</option><option>New suggestion</option><option>Account issue</option></select></label><label class="field-label" for="feedbackMessage">Message<textarea id="feedbackMessage" required rows="3" placeholder="What should be corrected?"></textarea></label><button class="primary-button" type="submit">Send to admin <span>↗</span></button><p class="match-feedback" id="feedbackStatus"></p></form></div><div class="feedback-inbox hidden" id="feedbackInbox"><div class="panel-heading"><div><p class="eyebrow">ADMIN INBOX</p><h2>Player feedback</h2></div><span class="step-badge">PRIVATE</span></div><div id="feedbackList"></div></div></section>
+
+      <section class="access-section" id="accounts"><div class="access-copy"><p class="eyebrow">PLAYER ACCESS</p><h2>Claim your<br><em>place.</em></h2><p>Players can request the account that matches their roster name. Access stays pending until the admin approves it.</p><button class="google-button" id="googleButton" type="button"><span class="google-mark">G</span> Continue with Google</button><p class="auth-note">Google OAuth needs a server client ID before this can become real sign-in.</p></div><div class="claim-panel" id="claimPanel"><p class="eyebrow">REQUEST ACCESS</p><form id="claimForm"><label class="field-label" for="claimName">Full name<input id="claimName" required placeholder="Enter your roster name" /></label><label class="field-label" for="claimPosition">Position<select id="claimPosition"><option>GK</option><option>CB</option><option>LB</option><option>RB</option><option>CM</option><option>CAM</option><option>CDM</option><option>LW</option><option>RW</option><option>CF</option></select></label><label class="field-label" for="claimEmail">Google email<input id="claimEmail" type="email" placeholder="you@example.com" /></label><button class="primary-button" type="submit">Send claim request <span>↗</span></button><p class="match-feedback" id="claimFeedback"></p></form></div><div class="claims-panel hidden" id="claimsPanel"><div class="panel-heading"><div><p class="eyebrow">ADMIN QUEUE</p><h2>Claim requests</h2></div><span class="step-badge">APPROVAL</span></div><div id="claimList"></div></div></section>
+
+      <section class="method-section" id="method"><div class="method-intro"><p class="eyebrow">THE METHOD</p><h2>Context makes<br><em>the impact.</em></h2><p>Every match action is counted with a position-specific decimal value. No subjective overall rating is generated.</p></div><div class="formula-card"><div class="formula-top"><span class="mono">POSITION EVENT VALUE</span><span class="formula-symbol">Σ</span></div><div class="formula-equation">event count × <span>role delta</span></div><div class="weight-bars" id="methodWeights"></div></div><div class="role-list" id="roleList"></div></section>
+      <section class="delta-table-section"><div class="top-ten-heading"><div><p class="eyebrow">THE EXACT TABLE</p><h2>Every role gets<br><em>its own weight.</em></h2></div><span class="mono">DECIMAL CHANGES / PER ACTION</span></div><div class="delta-table-wrap"><table class="delta-table"><thead><tr><th>Match statistic</th><th>Attacker</th><th>Midfielder</th><th>Defender / GK</th></tr></thead><tbody id="deltaTableBody"></tbody></table></div></section>
+    </main>
+    <footer><span>PITCHBOARD / A SMALLER, FAIRER SCOUTING TOOL</span><span>Built for the beautiful game</span></footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
